@@ -11,7 +11,7 @@
 
 #include "FixtureFactory.h"
 #include "Network/ETH_Connector.h"
-#include "I2C_Handler.h"
+#include "Drivers/I2C_Handler.h"
 #include "Workers/LaserFixtureWorker.h"
 #include "Workers/RelaisFixtureWorker.h"
 

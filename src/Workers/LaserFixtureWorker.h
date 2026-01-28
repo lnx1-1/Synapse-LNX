@@ -5,7 +5,7 @@
 #ifndef MYSTICCREATURESFIGUR_LASERFIXTUREWORKER_H
 #define MYSTICCREATURESFIGUR_LASERFIXTUREWORKER_H
 #include "Idmx_FixtureWorker.h"
-#include "PCA_9685.h"
+#include "../Drivers/PCA_9685.h"
 
 #define PWM_MOTOR_CHANNEL 0
 

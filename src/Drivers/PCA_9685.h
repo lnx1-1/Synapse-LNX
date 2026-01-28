@@ -6,7 +6,7 @@
 #define MYSTICCREATURESFIGUR_PCA_9685_H
 #include <Wire.h>
 
-// PCA9685 Konfiguration
+// PCA9685 Servo Controller Konfiguration
 
 #define MODE1_REG 0x00
 #define PRESCALE_REG 0xFE

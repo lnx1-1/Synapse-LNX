@@ -7,7 +7,7 @@
 #include <Wire.h>
 
 #include "ArduinoLog.h"
-#include "../I2C_Handler.h"
+#include "../Drivers/I2C_Handler.h"
 
 #define HOLD_TIME_MS 700
 #define numberOfServos 2

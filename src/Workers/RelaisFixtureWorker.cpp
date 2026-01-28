@@ -4,7 +4,7 @@
 
 #include "RelaisFixtureWorker.h"
 
-#include "I2C_Handler.h"
+#include "../Drivers/I2C_Handler.h"
 
 #define XL9535_CONFIG_PORT 0x06
 #define XL9535_CONFIG_OUTPUT 0x00
@@ -98,24 +98,24 @@ void printByte(uint8_t byte) {
 
 uint8_t lastCMDVal = 0b10;
 
-void setMotor() {
-    if (data[0] < 85) {
-        outCMD = outCMD | MOTOR_STOP; // Motor Stop
-        Log.verboseln("Sending Motor Stop");
-    } else if (data[0] < 170) {
-        outCMD = outCMD | MOTOR_CLOSE; // Kugel Close
-        Log.verboseln("Sending Motor Close");
-    } else {
-        if (limitPressed) {
-            Log.verboseln("Limit Currently Pressed. Motor Open Ignored");
-            outCMD = outCMD | MOTOR_STOP; // Motor Stop
-            Log.verboseln("Sending Motor Stop");
-        } else {
-            outCMD = outCMD | MOTOR_OPEN; // Kugel Open
-            Log.verboseln("Sending Motor Open");
-        }
-    }
-}
+// void setMotor() {
+//     if (data[0] < 85) {
+//         outCMD = outCMD | MOTOR_STOP; // Motor Stop
+//         Log.verboseln("Sending Motor Stop");
+//     } else if (data[0] < 170) {
+//         outCMD = outCMD | MOTOR_CLOSE; // Kugel Close
+//         Log.verboseln("Sending Motor Close");
+//     } else {
+//         if (limitPressed) {
+//             Log.verboseln("Limit Currently Pressed. Motor Open Ignored");
+//             outCMD = outCMD | MOTOR_STOP; // Motor Stop
+//             Log.verboseln("Sending Motor Stop");
+//         } else {
+//             outCMD = outCMD | MOTOR_OPEN; // Kugel Open
+//             Log.verboseln("Sending Motor Open");
+//         }
+//     }
+// }
 
 void RelaisFixtureWorker::SendValues(const uint8_t *data, size_t size) {
     uint8_t outCMD = 0;

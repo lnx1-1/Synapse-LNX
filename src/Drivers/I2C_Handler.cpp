@@ -7,8 +7,8 @@
 #include <Wire.h>
 
 #include "ArduinoLog.h"
-#include "Config/hw_config.h"
-#include "Network/ETH_Connector.h"
+#include "../Config/hw_config.h"
+#include "../Network/ETH_Connector.h"
 
 void I2C_Handler::initI2C() {
     bool i2cInitState = Wire1.begin(hw_config::I2C_SDA_Pin, hw_config::I2C_SCL_Pin, hw_config::I2C_Speed);

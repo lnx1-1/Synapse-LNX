@@ -7,7 +7,7 @@
 #include <Wire.h>
 
 #include "../Idmx_FixtureWorker.h"
-#include "../PCA_9685.h"
+#include "../Drivers/PCA_9685.h"
 
 
 // Servo-Konfiguration
