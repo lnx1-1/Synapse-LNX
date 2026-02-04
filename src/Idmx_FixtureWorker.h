@@ -14,9 +14,10 @@ struct FixtureSetting {
     String label;
     String value;
     String type = "text";
+    std::vector<String> options;
 
-    FixtureSetting(String k, String l, String v, String t = "text")
-        : key(k), label(l), value(v), type(t) {
+    FixtureSetting(String k, String l, String v, String t = "text", std::vector<String> o = {})
+        : key(k), label(l), value(v), type(t), options(o) {
     }
 };
 

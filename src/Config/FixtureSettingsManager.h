@@ -51,6 +51,15 @@ public:
     void addSetting(const String &key, const String &label, uint16_t *valuePtr, const String &type = "number");
 
     /**
+     * @brief Adds a string-based setting with options (dropdown) to the manager.
+     * @param key The unique key for the setting.
+     * @param label A human-readable label for the setting.
+     * @param valuePtr Pointer to the string variable where the setting value is stored.
+     * @param options A list of strings for the dropdown options.
+     */
+    void addSetting(const String &key, const String &label, String *valuePtr, const std::vector<String> &options);
+
+    /**
      * @brief Loads all registered settings from NVS.
      */
     void load();
@@ -79,6 +88,7 @@ private:
         String key;
         String label;
         String type;
+        std::vector<String> options;
 
         enum ValueType { STRING, UINT32, INT, UINT16 } valueType;
 

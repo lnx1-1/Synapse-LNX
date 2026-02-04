@@ -8,21 +8,26 @@ FixtureSettingsManager::FixtureSettingsManager(const String &namespaceName) : _n
 }
 
 void FixtureSettingsManager::addSetting(const String &key, const String &label, String *valuePtr, const String &type) {
-    _bindings.push_back({key, label, type, SettingBinding::STRING, valuePtr});
+    _bindings.push_back({key, label, type, {}, SettingBinding::STRING, valuePtr});
 }
 
 void FixtureSettingsManager::addSetting(const String &key, const String &label, uint32_t *valuePtr,
                                         const String &type) {
-    _bindings.push_back({key, label, type, SettingBinding::UINT32, valuePtr});
+    _bindings.push_back({key, label, type, {}, SettingBinding::UINT32, valuePtr});
 }
 
 void FixtureSettingsManager::addSetting(const String &key, const String &label, int *valuePtr, const String &type) {
-    _bindings.push_back({key, label, type, SettingBinding::INT, valuePtr});
+    _bindings.push_back({key, label, type, {}, SettingBinding::INT, valuePtr});
 }
 
 void FixtureSettingsManager::addSetting(const String &key, const String &label, uint16_t *valuePtr,
                                         const String &type) {
-    _bindings.push_back({key, label, type, SettingBinding::UINT16, valuePtr});
+    _bindings.push_back({key, label, type, {}, SettingBinding::UINT16, valuePtr});
+}
+
+void FixtureSettingsManager::addSetting(const String &key, const String &label, String *valuePtr,
+                                        const std::vector<String> &options) {
+    _bindings.push_back({key, label, "select", options, SettingBinding::STRING, valuePtr});
 }
 
 void FixtureSettingsManager::load() {
@@ -108,7 +113,7 @@ std::vector<FixtureSetting> FixtureSettingsManager::getSettingsMetadata() const 
             case SettingBinding::UINT16: valStr = String(*((uint16_t *) b.ptr));
                 break;
         }
-        meta.push_back(FixtureSetting(b.key, b.label, valStr, b.type));
+        meta.push_back(FixtureSetting(b.key, b.label, valStr, b.type, b.options));
     }
     return meta;
 }
