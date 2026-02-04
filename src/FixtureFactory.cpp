@@ -15,7 +15,7 @@ Idmx_FixtureWorker *FixtureFactory::getNewFixture(const Fixture &fixture) {
             returnVal = new StepperFixtureWorker(fixture);
             break;
         case FixtureID::LightModule:
-            Log.errorln("FixtureFactory: Light Module Not implemented yet!");
+            returnVal = new LEDFixtureWorker(fixture);
             break;
         case FixtureID::Dummy:
             Log.errorln("FixtureFactory: Not implemented yet!");

@@ -10,6 +10,7 @@
 #include "Workers/RelaisFixtureWorker.h"
 #include "Workers/ServoFixtureWorker.h"
 #include "Workers/StepperFixtureWorker.h"
+#include "Workers/LEDFixtureWorker.h"
 
 class FixtureFactory {
 public:
