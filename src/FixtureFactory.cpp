@@ -5,7 +5,6 @@
 #include "FixtureFactory.h"
 
 
-
 Idmx_FixtureWorker *FixtureFactory::getNewFixture(const Fixture &fixture) {
     Idmx_FixtureWorker *returnVal = nullptr;
     switch (fixture.id) {

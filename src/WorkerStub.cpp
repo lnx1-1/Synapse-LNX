@@ -1,11 +1,12 @@
 #include "WorkerStub.h"
+#include "Config/FixtureSettingsManager.h"
 #include <Arduino.h>
 
 #include "ArduinoLog.h"
 
 
-WorkerStub::WorkerStub(const Fixture &fixture, TwoWire &two_wire) {
-    _fixture = fixture;
+WorkerStub::WorkerStub(const Fixture &fixture, TwoWire &two_wire) : Idmx_FixtureWorker(fixture) {
+    settingsManager->load();
     Log.infoln("[%s] Would setup i2c connection", _fixture.toString());
     _twoWire = &two_wire;
     //Testing if the i2c connection is working

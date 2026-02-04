@@ -3,7 +3,7 @@
 //
 
 #include "ServoFixtureWorker.h"
-
+#include "../Config/FixtureSettingsManager.h"
 #include <Wire.h>
 
 #include "ArduinoLog.h"
@@ -22,9 +22,9 @@ struct servoState {
 servoState servos[numberOfServos];
 
 
-ServoFixtureWorker::ServoFixtureWorker(const Fixture &fixture) : Idmx_FixtureWorker() {
+ServoFixtureWorker::ServoFixtureWorker(const Fixture &fixture) : Idmx_FixtureWorker(fixture) {
+    settingsManager->load();
     _pca9685 = new PCA_9685(&Wire1, fixture.i2cAddress);
-    _fixture = fixture;
     Log.verboseln("Setting up PWM Controller");
 
     _pca9685->initPCA9685(SERVO_UPDATE_FREQUENCY); // Initialize the PCA9685

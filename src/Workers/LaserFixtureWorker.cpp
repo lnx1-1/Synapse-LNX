@@ -3,6 +3,7 @@
 //
 
 #include "LaserFixtureWorker.h"
+#include "../Config/FixtureSettingsManager.h"
 
 #include "../Drivers/I2C_Handler.h"
 #include "../Drivers/PCA_9685.h"
@@ -51,8 +52,8 @@ namespace autoTestValues {
     int test_start_pwm, test_quick_target, test_step_size, test_quick_delay;
 }
 
-LaserFixtureWorker::LaserFixtureWorker(const Fixture &fixture) {
-    _fixture = fixture;
+LaserFixtureWorker::LaserFixtureWorker(const Fixture &fixture) : Idmx_FixtureWorker(fixture) {
+    settingsManager->load();
     Log.verboseln("Setting up Laser Fixture Worker");
 
     _pca9685 = new PCA_9685(&Wire1, _fixture.i2cAddress);
@@ -249,3 +250,4 @@ void LaserFixtureWorker::SendValues(const uint8_t *data, size_t size) {
         }
     }
 }
+

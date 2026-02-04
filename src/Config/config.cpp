@@ -3,13 +3,50 @@
 //
 #include "config.h"
 
-// Config.cpp
-IPAddress Config::Sys_ip;
-IPAddress Config::Sys_subnet;
-IPAddress Config::Sys_gateway;
+int Config::LOG_LEVEL = ConfigDefaults::LOG_LEVEL;
+int Config::Universe = ConfigDefaults::UNIVERSE;
+IPAddress Config::Sys_ip = ConfigDefaults::IP;
+IPAddress Config::Sys_subnet = ConfigDefaults::SUBNET;
+IPAddress Config::Sys_gateway = ConfigDefaults::GATEWAY;
 
 void Config::init() {
-    Sys_ip = ConfigDefaults::IP;
-    Sys_subnet = ConfigDefaults::SUBNET;
-    Sys_gateway = ConfigDefaults::GATEWAY;
+    load();
+}
+
+void Config::save() {
+#ifdef ESP32
+    Preferences prefs;
+    prefs.begin("config", false);
+    uint32_t ip = (uint32_t) Config::Sys_ip;
+    uint32_t subnet = (uint32_t) Config::Sys_subnet;
+    uint32_t gateway = (uint32_t) Config::Sys_gateway;
+    prefs.putUInt("ip", ip);
+    prefs.putUInt("subnet", subnet);
+    prefs.putUInt("gateway", gateway);
+    prefs.putInt("universe", Config::Universe);
+    prefs.putInt("log_level", Config::LOG_LEVEL);
+    prefs.end();
+#endif
+}
+
+void Config::load() {
+#ifdef ESP32
+    Preferences prefs;
+    prefs.begin("config", true);
+
+    Config::Sys_ip = IPAddress(prefs.getUInt("ip", (uint32_t) ConfigDefaults::IP));
+    Config::Sys_subnet = IPAddress(prefs.getUInt("subnet", (uint32_t) ConfigDefaults::SUBNET));
+    Config::Sys_gateway = IPAddress(prefs.getUInt("gateway", (uint32_t) ConfigDefaults::GATEWAY));
+
+    Config::Universe = prefs.getInt("universe", ConfigDefaults::UNIVERSE);
+    Config::LOG_LEVEL = prefs.getInt("log_level", ConfigDefaults::LOG_LEVEL);
+
+    prefs.end();
+#else
+    Config::Sys_ip = ConfigDefaults::IP;
+    Config::Sys_subnet = ConfigDefaults::SUBNET;
+    Config::Sys_gateway = ConfigDefaults::GATEWAY;
+    Config::Universe = ConfigDefaults::UNIVERSE;
+    Config::LOG_LEVEL = ConfigDefaults::LOG_LEVEL;
+#endif
 }

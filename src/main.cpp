@@ -11,35 +11,64 @@
 
 #include "FixtureFactory.h"
 #include "Network/ETH_Connector.h"
+#include "Network/WebInterface.h"
 #include "Drivers/I2C_Handler.h"
 #include "Workers/LaserFixtureWorker.h"
 #include "Workers/RelaisFixtureWorker.h"
 
-ArtnetReceiver artnetRecv;
-uint16_t universe1 = Config::Universe; // 0 - 32767 Flache Addressierung
+ArtnetETHReceiver artnetRecv;
+unsigned long lastArtnetPacketTime = 0;
 
 std::list<Idmx_FixtureWorker *> dmxFixtures;
 
+class LogRedirector : public Print {
+public:
+    size_t write(uint8_t c) override {
+        Serial.write(c);
+        WebInterface::webLog.write(c);
+        return 1;
+    }
+};
+
+LogRedirector logRedirector;
 
 void artnetReceiveCallback(const uint8_t *data, uint16_t size,
                            const ArtDmxMetadata &metadata,
                            const ArtNetRemoteInfo &remote);
 
+void reinitModules() {
+    Log.infoln("Re-initializing modules...");
+    ETH_Connector::InitEth();
+    artnetRecv.unsubscribeArtDmxUniverses();
+    Log.infoln("[ArtNet] Unsubscribed from Universes");
+
+    for (auto worker: dmxFixtures) {
+        worker->stop();
+    }
+
+    artnetRecv.subscribeArtDmxUniverse(Config::Universe, artnetReceiveCallback);
+    Log.infoln("[ArtNet] Re-Subscribed to Universe %d", Config::Universe);
+    Log.begin(Config::LOG_LEVEL, &logRedirector, true);
+}
+
 void setup() {
     Serial.begin(hw_config::SerialBaud);
-    Log.begin(Config::LOG_LEVEL, &Serial, true);
 
     Config::init();
+
+    Log.begin(Config::LOG_LEVEL, &logRedirector, true);
 
     delay(200);
 
     ETH_Connector::InitEth();
 
+    WebInterface::init();
+
     I2C_Handler::initI2C(false);
 
     artnetRecv.begin();
-    Log.infoln("Art-Net Receiver Initialized");
-    artnetRecv.subscribeArtDmxUniverse(universe1, artnetReceiveCallback);
+    artnetRecv.subscribeArtDmxUniverse(Config::Universe, artnetReceiveCallback);
+    Log.infoln("[ArtNet] Receiver Initialized. Subscribed to Universe %d", Config::Universe);
 
     // Init Fixtures
     Log.infoln("------ Initializing Fixtures...");
@@ -57,10 +86,11 @@ void setup() {
         }
     }
 
-    Log.infoln("Setup Done");
+    Log.infoln("------ Setup Done ------");
 }
 
 void loop() {
+    WebInterface::handle();
     for (auto dmx_fixture: dmxFixtures) {
         dmx_fixture->tick();
     }
@@ -81,8 +111,9 @@ void printDMXData(const uint8_t *data, uint16_t size) {
 void artnetReceiveCallback(const uint8_t *data, uint16_t size,
                            const ArtDmxMetadata &metadata,
                            const ArtNetRemoteInfo &remote) {
-    Log.verboseln("[Artnet] Received data from Universe: %d, Device: %s ", metadata.universe,
-                  remote.ip.toString().c_str());
+    lastArtnetPacketTime = millis();
+    Log.traceln("[Artnet] Received data from Universe: %d, Device: %s ", metadata.universe,
+                remote.ip.toString().c_str());
     for (Idmx_FixtureWorker *worker: dmxFixtures) {
         int startIndex = worker->_fixture.dmxAddress - 1;
         // DMX addresses are 1-based, so we add 1 to the fixture's address

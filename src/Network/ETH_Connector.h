@@ -21,11 +21,25 @@
 
 class ETH_Connector {
 public:
+    /**
+     * @brief Initializes the Ethernet hardware and registers event handlers.
+     */
     static void InitEth();
+
+    /**
+     * @brief Handles WiFi/Ethernet events (e.g., connection established, IP assigned).
+     * @param event The ID of the event that occurred.
+     */
     static void WiFiEventHandler(arduino_event_id_t event);
+
+    /**
+     * @brief Checks if the Ethernet connection is currently active and has an IP.
+     * @return True if connected, false otherwise.
+     */
     static bool isConnected();
+
 private:
-   static bool _isConnected;
+    static bool _isConnected;
 };
 
 

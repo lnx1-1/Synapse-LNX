@@ -29,7 +29,7 @@ void ETH_Connector::WiFiEventHandler(arduino_event_id_t event) {
             Log.infoln("ETH Connected");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
-            Log.info("ETH MAC: %s, IPv4: %s, Speed: %d Mbps", ETH.macAddress().c_str(),
+            Log.info("ETH MAC: %s, IPv4: %s, Speed: %d Mbps\n", ETH.macAddress().c_str(),
                      ETH.localIP().toString().c_str(), ETH.linkSpeed());
 
 

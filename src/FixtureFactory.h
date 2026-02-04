@@ -13,6 +13,11 @@
 
 class FixtureFactory {
 public:
+    /**
+     * @brief Factory method to create a new FixtureWorker based on the fixture's type.
+     * @param fixture The Fixture configuration.
+     * @return A pointer to the created Idmx_FixtureWorker, or nullptr if the type is unknown.
+     */
     static Idmx_FixtureWorker *getNewFixture(const Fixture &fixture);
 };
 

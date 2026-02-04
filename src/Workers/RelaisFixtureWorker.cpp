@@ -3,7 +3,7 @@
 //
 
 #include "RelaisFixtureWorker.h"
-
+#include "../Config/FixtureSettingsManager.h"
 #include "../Drivers/I2C_Handler.h"
 
 #define XL9535_CONFIG_PORT 0x06
@@ -22,8 +22,8 @@ int lastButtonState = HIGH; // Previous reading from input pin
 int buttonState = HIGH; // Current debounced state
 int lastStableState = HIGH; // Last confirmed stable state
 
-RelaisFixtureWorker::RelaisFixtureWorker(const Fixture &fixture) {
-    _fixture = fixture;
+RelaisFixtureWorker::RelaisFixtureWorker(const Fixture &fixture) : Idmx_FixtureWorker(fixture) {
+    settingsManager->load();
     Log.verboseln("Setting up Relais Fixture Worker. Number of Channels: %d", _fixture.channelCount);
 
     pinMode(LIMIT_SWITCH_PIN, INPUT_PULLUP); // Enable internal pull-up resistor
@@ -140,3 +140,4 @@ void RelaisFixtureWorker::SendValues(const uint8_t *data, size_t size) {
     setRelais(outCMD);
     lastCMDVal = outCMD;
 }
+

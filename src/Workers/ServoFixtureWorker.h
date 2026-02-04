@@ -19,16 +19,36 @@
 class ServoFixtureWorker : public Idmx_FixtureWorker {
     PCA_9685 *_pca9685;
 
+    /**
+     * @brief Internal helper to check if a servo should be disabled to save power or prevent jitter.
+     * @param servoNum The index of the servo to check.
+     */
     void checkAndDisablePWM(int servoNum) const;
 
 public:
+    /**
+     * @brief Constructor for the Servo Fixture Worker.
+     * @param fixture The Fixture configuration.
+     */
     explicit ServoFixtureWorker(const Fixture &fixture);
 
+    /**
+     * @brief Processes the DMX data and moves the servos to the corresponding positions.
+     * @param data Pointer to the buffer containing position values (0-255).
+     * @param size Number of channels.
+     */
     void SendValues(const uint8_t *data, size_t size) override;
 
+    /**
+     * @brief Sets the position of a specific servo channel.
+     * @param channel The PCA9685 channel the servo is connected to.
+     * @param value The target position value (0-255).
+     */
     void setServoPosition(uint8_t channel, uint8_t value) const;
 
-
+    /**
+     * @brief Periodically called to handle timed servo movements or power management.
+     */
     void tick() override;
 };
 
