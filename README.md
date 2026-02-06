@@ -11,6 +11,11 @@ Modular ArtNet firmware framework for ESP32 with flexible fixture modules - RGB,
 
 - DMX wiring, pass-through, and direction control: `docs/DMX.md`
 
+## Build Environments
+
+- Fast/default build: `pio run -e wt32-eth01`
+- Strict warnings build: `pio run -e wt32-eth01-strict`
+
 ## Work in Progress
 
 This project is currently under active development.
