@@ -15,18 +15,20 @@ class StepperFixtureWorker : public Idmx_FixtureWorker {
     FastAccelStepperEngine _engine{};
     FastAccelStepper *_stepper{};
 
+    int _last_DMXSpeedVal = 0;
+
     struct Settings {
         uint32_t maxSpeed = 1000;
         uint32_t acceleration = 500;
         uint32_t pulsesPerRevolution = 1600;
     } _settings;
 
-public:
     /**
      * @brief Configures the stepper engine and motor parameters based on internal settings.
      */
     void configureSettings();
 
+public:
     /**
      * @brief Constructor for the Stepper Fixture Worker.
      * @param fixture The Fixture configuration.
