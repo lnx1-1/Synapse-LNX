@@ -42,6 +42,9 @@ public:
     static constexpr uint8_t I2C_SCL_Pin = 17; //33; //485_EN Gelabeld auf ETH01
     static constexpr uint I2C_Speed = 100000; // 100 kHz Slowest but most compatible speed
     static constexpr uint SerialBaud = 115200; // Serial communication speed
+    static constexpr uint8_t DMX_TX_Pin = 2;
+    static constexpr uint8_t DMX_RX_Pin = 35;
+    static constexpr uint8_t DMX_RTS_Pin = 32;
 };
 
 inline std::list<Fixture> getFixtures() {
