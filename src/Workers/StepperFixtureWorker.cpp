@@ -12,6 +12,10 @@ void StepperFixtureWorker::configureSettings() {
     settingsManager->load();
 }
 
+float StepperFixtureWorker::calculateRPM(float stepsPerSecond) const {
+    return (stepsPerSecond / _settings.pulsesPerRevolution) * 60.0f;
+}
+
 StepperFixtureWorker::StepperFixtureWorker(const Fixture &fixture) : Idmx_FixtureWorker(fixture) {
     configureSettings();
 
@@ -20,10 +24,11 @@ StepperFixtureWorker::StepperFixtureWorker(const Fixture &fixture) : Idmx_Fixtur
     _engine = FastAccelStepperEngine();
     _engine.init();
 
-
     _stepper = _engine.stepperConnectToPin(PIN_STEP);
     // pinMode(PIN_STEP, OPEN_DRAIN);
     if (_stepper) {
+        pinMode(PIN_ENABLE, OUTPUT);
+        setDriverEnabled(false);
         _stepper->setDirectionPin(PIN_DIRECTION);
         _stepper->setSpeedInUs(1000000 / _settings.maxSpeed); // Initial speed
         _stepper->setAcceleration(static_cast<int32_t>(_settings.acceleration));
@@ -33,6 +38,9 @@ StepperFixtureWorker::StepperFixtureWorker(const Fixture &fixture) : Idmx_Fixtur
 
 
 void StepperFixtureWorker::tick() {
+    if (0 == _stepper->getCurrentSpeedInMilliHz(true)) {
+        setDriverEnabled(false);
+    }
 }
 
 void StepperFixtureWorker::SendValues(const uint8_t *data, size_t size) {
@@ -41,21 +49,32 @@ void StepperFixtureWorker::SendValues(const uint8_t *data, size_t size) {
             const float speedFactor = static_cast<float>(_settings.maxSpeed) / 255.0;
             const float scaledSpeed = speedFactor * data[0];
 
-            if (data[0] == 0) {
+            auto DMX_SpeedVal = data[0];
+            auto DMX_DirVal = data[1];
+
+
+            if (_last_DMXVals == std::pair{data[0], data[1]}) return;
+
+
+            if (DMX_SpeedVal == 0) {
                 _stepper->stopMove();
-                Log.traceln("Zero Speed - Stopping");
+                Log.traceln("Zero Speed - Going to Stop");
             } else {
+                setDriverEnabled(true);
                 auto delayInUs = static_cast<uint32_t>(1000000.0f / scaledSpeed);
                 _stepper->setSpeedInUs(delayInUs);
 
-                if (data[1] >= 128) {
-                    Log.verboseln("Mov Right Speed [%F]", scaledSpeed);
+                float rpm = calculateRPM(scaledSpeed);
+
+                if (DMX_DirVal >= 128) {
+                    Log.traceln("Mov Right Speed [%F] RPM [%F]", scaledSpeed, rpm);
                     _stepper->runForward();
                 } else {
-                    Log.verboseln("Mov Left Speed [%F]", scaledSpeed);
+                    Log.traceln("Mov Left Speed [%F] RPM [%F]", scaledSpeed, rpm);
                     _stepper->runBackward();
                 }
             }
+            _last_DMXVals = std::pair{data[0], data[1]};
         }
     }
 }
@@ -63,5 +82,18 @@ void StepperFixtureWorker::SendValues(const uint8_t *data, size_t size) {
 void StepperFixtureWorker::onSettingsChanged(const String &key) {
     if (key == "accel" && _stepper) {
         _stepper->setAcceleration(static_cast<int32_t>(_settings.acceleration));
+    }
+}
+
+void StepperFixtureWorker::setDriverEnabled(bool enabled) {
+    if (_driverEnabled == enabled) {
+        return;
+    }
+    _driverEnabled = enabled;
+    if (PIN_ENABLE_ACTIVE_LOW) {
+        digitalWrite(PIN_ENABLE, enabled ? LOW : HIGH);
+        Log.noticeln("Motor Driver %s", enabled ? "Enabled" : "Disabled");
+    } else {
+        digitalWrite(PIN_ENABLE, enabled ? HIGH : LOW);
     }
 }

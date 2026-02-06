@@ -1,6 +1,7 @@
 #include "WebInterface.h"
 #include <ArduinoLog.h>
 #include "Drivers/DmxInput.h"
+#include <WiFi.h>
 #include <list>
 
 extern std::list<Idmx_FixtureWorker *> dmxFixtures;
@@ -11,6 +12,7 @@ extern void reinitModules();
 
 WebServer WebInterface::server(80);
 WebLog WebInterface::webLog;
+bool WebInterface::captivePortalActive = false;
 
 size_t WebLog::write(uint8_t c) {
     if (enabled) {
@@ -41,6 +43,7 @@ void WebInterface::init() {
     server.on("/getLogs", HTTP_GET, handleGetLogs);
     server.on("/status", HTTP_GET, handleStatus);
     server.on("/dmx", HTTP_GET, handleDmxStatus);
+    server.onNotFound(handleNotFound);
     server.begin();
     Log.infoln("Web Interface started on port 80");
 }
@@ -50,7 +53,27 @@ void WebInterface::handle() {
 }
 
 void WebInterface::handleRoot() {
+    if (captivePortalActive) {
+        server.send(200, "text/html", getCaptiveHtml());
+        return;
+    }
     server.send(200, "text/html", getHtml());
+}
+
+void WebInterface::handleNotFound() {
+    if (captivePortalActive) {
+        server.send(200, "text/html", getCaptiveHtml());
+        return;
+    }
+    server.send(404, "text/plain", "Not found");
+}
+
+void WebInterface::setCaptivePortalActive(bool active) {
+    captivePortalActive = active;
+}
+
+bool WebInterface::isCaptivePortalActive() {
+    return captivePortalActive;
 }
 
 void WebInterface::handleSave() {
@@ -62,6 +85,11 @@ void WebInterface::handleSave() {
     if (server.hasArg("input_mode")) {
         Config::InputMode = static_cast<ConfigDefaults::InputMode>(server.arg("input_mode").toInt());
     }
+    if (server.hasArg("cap_enabled")) Config::CaptiveEnabled = server.arg("cap_enabled") == "1";
+    if (server.hasArg("cap_grace_ms")) Config::CaptiveGraceMs = server.arg("cap_grace_ms").toInt();
+    if (server.hasArg("cap_duration_ms")) Config::CaptiveDurationMs = server.arg("cap_duration_ms").toInt();
+    if (server.hasArg("cap_ssid")) Config::CaptiveSsid = server.arg("cap_ssid");
+    if (server.hasArg("cap_pass")) Config::CaptivePass = server.arg("cap_pass");
 
     Config::save();
 
@@ -118,21 +146,30 @@ void WebInterface::handleDmxStatus() {
     uint8_t snapshot[512];
     size_t size = DmxInput::copyLastFrame(snapshot, sizeof(snapshot));
 
-    String html = "<!DOCTYPE html><html><head><title>DMX Input Status</title>";
+    String html = "<!DOCTYPE html><html><head><title>SYNAPSE LNX - DMX Status</title>";
     html += "<style>";
-    html += "body { font-family: Arial; margin: 20px; background-color: #f4f4f9; color: #333; }";
-    html += "h1, h2 { color: #4CAF50; }";
-    html += "table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background-color: #fff; }";
-    html += "td, th { border: 1px solid #ddd; padding: 8px; }";
-    html += "th { background-color: #4CAF50; color: white; text-align: left; }";
-    html += ".badge { display:inline-block; padding:4px 8px; border-radius:4px; color:white; }";
-    html += ".ok { background-color:#4CAF50; }";
-    html += ".bad { background-color:#f44336; }";
+    html += ":root{--bg0:#0b0f14;--bg1:#0f1b2b;--bg2:#082a2f;--panel:#111a24;--panel2:#0c141c;";
+    html += "--text:#e7f1f7;--muted:#a8b5c2;--accent:#2bd9d9;--accent2:#ff8a3d;--ok:#2bd957;--bad:#ff5c5c;";
+    html += "--line:#1f2d3b;--shadow:0 10px 30px rgba(0,0,0,.35)}";
+    html += "body{font-family:'Space Grotesk','Exo 2','Trebuchet MS',sans-serif;margin:20px;";
+    html += "color:var(--text);background:";
+    html += "radial-gradient(900px 400px at 80% -10%, rgba(43,217,217,.18), transparent 60%),";
+    html += "radial-gradient(700px 300px at 10% 0%, rgba(255,138,61,.15), transparent 55%),";
+    html += "linear-gradient(140deg,var(--bg0),var(--bg1) 55%,var(--bg2));}";
+    html += "h1,h2{color:var(--accent);letter-spacing:.02em}";
+    html += "a{color:var(--accent2);text-decoration:none}";
+    html += "a:hover{text-decoration:underline}";
+    html += "table{border-collapse:collapse;width:100%;margin-bottom:20px;background:var(--panel);box-shadow:var(--shadow);}";
+    html += "td,th{border:1px solid var(--line);padding:8px}";
+    html += "th{background:linear-gradient(90deg,rgba(43,217,217,.2),rgba(255,138,61,.15));color:var(--text);text-align:left}";
+    html += ".badge{display:inline-block;padding:4px 8px;border-radius:999px;color:white;font-weight:600}";
+    html += ".ok{background-color:var(--ok)}";
+    html += ".bad{background-color:var(--bad)}";
     html += "</style>";
     html += "<meta http-equiv='refresh' content='2'>";
     html += "</head><body>";
 
-    html += "<h1>DMX Input Status</h1>";
+    html += "<h1>SYNAPSE LNX - DMX Input Status</h1>";
     html += "<p>Mode: <b>" + String(isDmxMode ? "DMX" : "Art-Net") + "</b></p>";
     html += "<p>Status: <span class='badge " + String(receiving ? "ok" : "bad") + "'>" +
             String(receiving ? "Receiving" : "No Data") + "</span></p>";
@@ -157,22 +194,45 @@ void WebInterface::handleDmxStatus() {
 }
 
 String WebInterface::getHtml() {
-    String html = "<!DOCTYPE html><html><head><title>Kaleo ArtNet Node</title>";
+    String html = "<!DOCTYPE html><html><head><title>SYNAPSE LNX Control</title>";
+    html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
     html += "<style>";
-    html += "body { font-family: Arial; margin: 20px; background-color: #f4f4f9; color: #333; }";
-    html += "h1, h2 { color: #4CAF50; }";
-    html +=
-            "table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }";
-    html += "td, th { border: 1px solid #ddd; padding: 12px; }";
-    html += "tr:nth-child(even){background-color: #f9f9f9;}";
-    html +=
-            "th { padding-top: 12px; padding-bottom: 12px; text-align: left; background-color: #4CAF50; color: white; }";
-    html += "input[type=text], select { padding: 8px; width: 100%; box-sizing: border-box; }";
-    html +=
-            "button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px 0; }";
-    html += "button:hover { background-color: #45a049; }";
-    html +=
-            "#logContainer { background-color: #000; color: #0f0; padding: 10px; height: 300px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; }";
+    html += ":root{--bg0:#0b0f14;--bg1:#0f1b2b;--bg2:#082a2f;--panel:#111a24;--panel2:#0c141c;";
+    html += "--text:#e7f1f7;--muted:#a8b5c2;--accent:#2bd9d9;--accent2:#ff8a3d;--ok:#2bd957;--bad:#ff5c5c;";
+    html += "--line:#1f2d3b;--shadow:0 10px 30px rgba(0,0,0,.35)}";
+    html += "*{box-sizing:border-box}";
+    html += "body{font-family:'Space Grotesk','Exo 2','Trebuchet MS',sans-serif;margin:20px;color:var(--text);";
+    html += "background:";
+    html += "radial-gradient(900px 400px at 80% -10%, rgba(43,217,217,.18), transparent 60%),";
+    html += "radial-gradient(700px 300px at 10% 0%, rgba(255,138,61,.15), transparent 55%),";
+    html += "linear-gradient(140deg,var(--bg0),var(--bg1) 55%,var(--bg2));}";
+    html += "body:before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.08;";
+    html += "background:repeating-linear-gradient(135deg,rgba(43,217,217,.2) 0 1px,transparent 1px 14px)}";
+    html += "h1,h2,h3{color:var(--accent);letter-spacing:.02em}";
+    html += "h2{margin-top:28px}";
+    html += "a{color:var(--accent2);text-decoration:none}";
+    html += "a:hover{text-decoration:underline}";
+    html += ".hero{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;";
+    html += "padding:16px 18px;border:1px solid var(--line);border-radius:14px;";
+    html += "background:linear-gradient(120deg,rgba(17,26,36,.8),rgba(12,20,28,.9));box-shadow:var(--shadow)}";
+    html += ".brand{font-size:1.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}";
+    html += ".tagline{font-size:.9rem;letter-spacing:.3em;text-transform:lowercase;color:var(--muted)}";
+    html += ".status-pill{white-space:nowrap;font-size:.85rem;padding:6px 12px;border-radius:999px;";
+    html += "background:rgba(255,255,255,.06);border:1px solid var(--line)}";
+    html += ".subtitle{margin:6px 0 0;color:var(--muted)}";
+    html += "table{border-collapse:collapse;width:100%;margin-bottom:20px;background:var(--panel);";
+    html += "box-shadow:var(--shadow)}";
+    html += "td,th{border:1px solid var(--line);padding:12px}";
+    html += "tr:nth-child(even){background-color:rgba(255,255,255,.02)}";
+    html += "th{text-align:left;background:linear-gradient(90deg,rgba(43,217,217,.2),rgba(255,138,61,.15));color:var(--text)}";
+    html += "input[type=text],input[type=number],select{padding:8px;width:100%;box-sizing:border-box;";
+    html += "background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px}";
+    html += "button{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#0b0f14;";
+    html += "padding:10px 20px;border:none;border-radius:999px;cursor:pointer;margin:5px 0;font-weight:700}";
+    html += "button:hover{filter:brightness(1.08)}";
+    html += "#logContainer{background:#05080c;color:#7cffc7;padding:10px;height:300px;overflow-y:scroll;";
+    html += "font-family:'JetBrains Mono','Fira Code',monospace;white-space:pre-wrap;border:1px solid var(--line);border-radius:10px}";
+    html += ".note{color:var(--muted);font-size:.9rem}";
     html += "</style>";
     html += "<script>";
     html += "function toggleLog() {";
@@ -196,15 +256,21 @@ String WebInterface::getHtml() {
     html += "    const active = t.endsWith('_active');";
     html += "    const label = isArtNet ? 'Art-Net' : 'DMX';";
     html += "    s.innerText = label + ': ' + (active ? 'Receiving' : 'No Data');";
-    html += "    s.style.backgroundColor = active ? '#4CAF50' : '#f44336';";
+    html += "    s.style.backgroundColor = active ? '#2bd957' : '#ff5c5c';";
     html += "    s.style.color = 'white';";
     html += "  });";
     html += "}, 1000);";
     html += "</script>";
     html += "</head><body>";
 
-    html +=
-            "<h1>Kaleo ArtNet Node <div id='artnetStatus' style='display:inline-block; font-size: 0.5em; vertical-align: middle; padding:5px 10px; border-radius:4px; background-color:#ccc;'>Input: Checking...</div></h1>";
+    html += "<div class='hero'>";
+    html += "<div>";
+    html += "<div class='brand'>SYNAPSE LNX</div>";
+    html += "<div class='tagline'>connect the chaos</div>";
+    html += "<div class='subtitle'>Modulares Art-Net/DMX Steuer- und Orchestrierungssystem</div>";
+    html += "</div>";
+    html += "<div id='artnetStatus' class='status-pill'>Input: Checking...</div>";
+    html += "</div>";
 
     html += "<h2>Settings</h2>";
     html += "<form action='/save' method='POST'>";
@@ -220,6 +286,17 @@ String WebInterface::getHtml() {
     html += String("<option value='0'") + (Config::InputMode == ConfigDefaults::InputMode::ArtNet ? " selected" : "") + ">Art-Net</option>";
     html += String("<option value='1'") + (Config::InputMode == ConfigDefaults::InputMode::DMX ? " selected" : "") + ">DMX</option>";
     html += "</select></td></tr>";
+    html += "<tr><td colspan='2'><b>Captive Portal</b></td></tr>";
+    html += "<tr><td>Enable</td><td><input type='checkbox' name='cap_enabled' value='1'" +
+            String(Config::CaptiveEnabled ? " checked" : "") + "></td></tr>";
+    html += "<tr><td>Grace (ms)</td><td><input type='text' name='cap_grace_ms' value='" +
+            String(Config::CaptiveGraceMs) + "'></td></tr>";
+    html += "<tr><td>Duration (ms)</td><td><input type='text' name='cap_duration_ms' value='" +
+            String(Config::CaptiveDurationMs) + "'></td></tr>";
+    html += "<tr><td>SSID Base</td><td><input type='text' name='cap_ssid' value='" +
+            Config::CaptiveSsid + "'></td></tr>";
+    html += "<tr><td>Password</td><td><input type='text' name='cap_pass' value='" +
+            Config::CaptivePass + "'></td></tr>";
     html += "<tr><td>Art-Net Universe</td><td><input type='text' name='universe' value='" + String(Config::Universe) +
             "'></td></tr>";
 
@@ -264,8 +341,7 @@ String WebInterface::getHtml() {
         }
     }
 
-    html +=
-            "<p style='color: #666; font-size: 0.9em;'><i>Note: Changing hardware-related settings (Pin, LED Count, Color Order) may require a reboot or cause temporary flickering.</i></p>";
+    html += "<p class='note'><i>Note: Changing hardware-related settings (Pin, LED Count, Color Order) may require a reboot or cause temporary flickering.</i></p>";
     html += "<button type='submit'>Save All Settings</button>";
     html += "</form>";
 
@@ -290,5 +366,58 @@ String WebInterface::getHtml() {
     html += "<div id='logContainer'>" + webLog.getLogs() + "</div>";
 
     html += "</body></html>";
+    return html;
+}
+
+String WebInterface::getCaptiveHtml() {
+    String html = "<!DOCTYPE html><html><head><title>SYNAPSE LNX Setup</title>";
+    html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
+    html += "<style>";
+    html += ":root{--bg0:#0b0f14;--bg1:#0f1b2b;--bg2:#082a2f;--panel:#111a24;--panel2:#0c141c;";
+    html += "--text:#e7f1f7;--muted:#a8b5c2;--accent:#2bd9d9;--accent2:#ff8a3d;--line:#1f2d3b;";
+    html += "--shadow:0 10px 30px rgba(0,0,0,.35)}";
+    html += "body{font-family:'Space Grotesk','Exo 2','Trebuchet MS',sans-serif;margin:0;color:var(--text);";
+    html += "background:";
+    html += "radial-gradient(900px 400px at 80% -10%, rgba(43,217,217,.18), transparent 60%),";
+    html += "radial-gradient(700px 300px at 10% 0%, rgba(255,138,61,.15), transparent 55%),";
+    html += "linear-gradient(140deg,var(--bg0),var(--bg1) 55%,var(--bg2));}";
+    html += ".wrap{max-width:560px;margin:0 auto;padding:20px;}";
+    html += ".card{background:linear-gradient(120deg,rgba(17,26,36,.9),rgba(12,20,28,.95));";
+    html += "border-radius:14px;padding:18px;border:1px solid var(--line);box-shadow:var(--shadow);}";
+    html += ".brand{font-size:1.2rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}";
+    html += ".tagline{font-size:.8rem;letter-spacing:.3em;text-transform:lowercase;color:var(--muted);margin-bottom:10px;}";
+    html += "h1{font-size:1.3rem;margin:0 0 8px;color:var(--accent);}";
+    html += "label{display:block;font-size:.9rem;margin:12px 0 6px;color:var(--muted);}";
+    html += "input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:1rem;";
+    html += "background:var(--panel2);color:var(--text);}";
+    html += "button{margin-top:16px;width:100%;padding:12px;border:0;border-radius:999px;";
+    html += "background:linear-gradient(120deg,var(--accent),var(--accent2));color:#0b0f14;font-size:1rem;font-weight:700;}";
+    html += ".note{font-size:.85rem;color:var(--muted);margin-top:8px;}";
+    html += "</style></head><body><div class='wrap'><div class='card'>";
+    html += "<div class='brand'>SYNAPSE LNX</div>";
+    html += "<div class='tagline'>connect the chaos</div>";
+    html += "<h1>Setup Portal</h1>";
+    html += "<p class='note'>Ethernet not ready. Configure network & input mode below.</p>";
+    html += "<form action='/save' method='POST'>";
+    html += "<label>IP Address</label><input name='ip' value='" + Config::Sys_ip.toString() + "'>";
+    html += "<label>Subnet Mask</label><input name='subnet' value='" + Config::Sys_subnet.toString() + "'>";
+    html += "<label>Gateway</label><input name='gateway' value='" + Config::Sys_gateway.toString() + "'>";
+    html += "<label>Universe</label><input name='universe' type='number' value='" + String(Config::Universe) + "'>";
+    html += "<label>Input Source</label><select name='input_mode'>";
+    html += String("<option value='0'") + (Config::InputMode == ConfigDefaults::InputMode::ArtNet ? " selected" : "") + ">Art-Net</option>";
+    html += String("<option value='1'") + (Config::InputMode == ConfigDefaults::InputMode::DMX ? " selected" : "") + ">DMX</option>";
+    html += "</select>";
+    html += "<label>Captive Portal Enabled</label><select name='cap_enabled'>";
+    html += String("<option value='1'") + (Config::CaptiveEnabled ? " selected" : "") + ">Yes</option>";
+    html += String("<option value='0'") + (!Config::CaptiveEnabled ? " selected" : "") + ">No</option>";
+    html += "</select>";
+    html += "<label>Grace (ms)</label><input name='cap_grace_ms' type='number' value='" + String(Config::CaptiveGraceMs) + "'>";
+    html += "<label>Duration (ms)</label><input name='cap_duration_ms' type='number' value='" + String(Config::CaptiveDurationMs) + "'>";
+    html += "<label>SSID Base</label><input name='cap_ssid' value='" + Config::CaptiveSsid + "'>";
+    html += "<label>Password</label><input name='cap_pass' value='" + Config::CaptivePass + "'>";
+    html += "<button type='submit'>Save & Apply</button>";
+    html += "</form>";
+    html += "<p class='note'>After saving, the device reinitializes networking.</p>";
+    html += "</div></div></body></html>";
     return html;
 }

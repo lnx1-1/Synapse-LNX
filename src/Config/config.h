@@ -22,6 +22,11 @@ namespace ConfigDefaults {
         DMX = 1
     };
     const InputMode INPUT_MODE = InputMode::ArtNet;
+    const bool CAPTIVE_ENABLE = true;
+    const uint32_t CAPTIVE_GRACE_MS = 10000;
+    const uint32_t CAPTIVE_DURATION_MS = 180000;
+    const char CAPTIVE_SSID[] = "SYNAPSE-LNX-Setup";
+    const char CAPTIVE_PASS[] = "connectchaos";
 }
 
 class Config {
@@ -32,6 +37,11 @@ public:
     static IPAddress Sys_subnet;
     static IPAddress Sys_gateway;
     static ConfigDefaults::InputMode InputMode;
+    static bool CaptiveEnabled;
+    static uint32_t CaptiveGraceMs;
+    static uint32_t CaptiveDurationMs;
+    static String CaptiveSsid;
+    static String CaptivePass;
 
     static void init();
 

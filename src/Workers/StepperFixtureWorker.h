@@ -10,12 +10,15 @@
 
 #define PIN_STEP 33
 #define PIN_DIRECTION 5
+#define PIN_ENABLE 17
+#define PIN_ENABLE_ACTIVE_LOW true
 
 class StepperFixtureWorker : public Idmx_FixtureWorker {
     FastAccelStepperEngine _engine{};
     FastAccelStepper *_stepper{};
 
-    int _last_DMXSpeedVal = 0;
+    std::pair<uint8_t, uint8_t> _last_DMXVals = {0, 0};
+    bool _driverEnabled = false;
 
     struct Settings {
         uint32_t maxSpeed = 1000;
@@ -27,6 +30,14 @@ class StepperFixtureWorker : public Idmx_FixtureWorker {
      * @brief Configures the stepper engine and motor parameters based on internal settings.
      */
     void configureSettings();
+
+    /**
+     * @brief Calculates the revolutions per minute (RPM) from steps per second.
+     * @param stepsPerSecond The speed in steps per second.
+     * @return The rotational speed in revolutions per minute (RPM).
+     */
+    float calculateRPM(float stepsPerSecond) const;
+    void setDriverEnabled(bool enabled);
 
 public:
     /**

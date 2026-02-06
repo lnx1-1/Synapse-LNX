@@ -9,6 +9,11 @@ IPAddress Config::Sys_ip = ConfigDefaults::IP;
 IPAddress Config::Sys_subnet = ConfigDefaults::SUBNET;
 IPAddress Config::Sys_gateway = ConfigDefaults::GATEWAY;
 ConfigDefaults::InputMode Config::InputMode = ConfigDefaults::INPUT_MODE;
+bool Config::CaptiveEnabled = ConfigDefaults::CAPTIVE_ENABLE;
+uint32_t Config::CaptiveGraceMs = ConfigDefaults::CAPTIVE_GRACE_MS;
+uint32_t Config::CaptiveDurationMs = ConfigDefaults::CAPTIVE_DURATION_MS;
+String Config::CaptiveSsid = ConfigDefaults::CAPTIVE_SSID;
+String Config::CaptivePass = ConfigDefaults::CAPTIVE_PASS;
 
 void Config::init() {
     load();
@@ -27,6 +32,11 @@ void Config::save() {
     prefs.putInt("universe", Config::Universe);
     prefs.putInt("log_level", Config::LOG_LEVEL);
     prefs.putInt("input_mode", static_cast<int>(Config::InputMode));
+    prefs.putBool("cap_en", Config::CaptiveEnabled);
+    prefs.putUInt("cap_grace", Config::CaptiveGraceMs);
+    prefs.putUInt("cap_dur", Config::CaptiveDurationMs);
+    prefs.putString("cap_ssid", Config::CaptiveSsid);
+    prefs.putString("cap_pass", Config::CaptivePass);
     prefs.end();
 #endif
 }
@@ -44,6 +54,11 @@ void Config::load() {
     Config::LOG_LEVEL = prefs.getInt("log_level", ConfigDefaults::LOG_LEVEL);
     Config::InputMode = static_cast<ConfigDefaults::InputMode>(
         prefs.getInt("input_mode", static_cast<int>(ConfigDefaults::INPUT_MODE)));
+    Config::CaptiveEnabled = prefs.getBool("cap_en", ConfigDefaults::CAPTIVE_ENABLE);
+    Config::CaptiveGraceMs = prefs.getUInt("cap_grace", ConfigDefaults::CAPTIVE_GRACE_MS);
+    Config::CaptiveDurationMs = prefs.getUInt("cap_dur", ConfigDefaults::CAPTIVE_DURATION_MS);
+    Config::CaptiveSsid = prefs.getString("cap_ssid", ConfigDefaults::CAPTIVE_SSID);
+    Config::CaptivePass = prefs.getString("cap_pass", ConfigDefaults::CAPTIVE_PASS);
 
     prefs.end();
 #else
@@ -53,5 +68,10 @@ void Config::load() {
     Config::Universe = ConfigDefaults::UNIVERSE;
     Config::LOG_LEVEL = ConfigDefaults::LOG_LEVEL;
     Config::InputMode = ConfigDefaults::INPUT_MODE;
+    Config::CaptiveEnabled = ConfigDefaults::CAPTIVE_ENABLE;
+    Config::CaptiveGraceMs = ConfigDefaults::CAPTIVE_GRACE_MS;
+    Config::CaptiveDurationMs = ConfigDefaults::CAPTIVE_DURATION_MS;
+    Config::CaptiveSsid = ConfigDefaults::CAPTIVE_SSID;
+    Config::CaptivePass = ConfigDefaults::CAPTIVE_PASS;
 #endif
 }

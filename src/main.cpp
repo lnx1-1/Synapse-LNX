@@ -10,6 +10,7 @@
 
 #include "FixtureFactory.h"
 #include "Network/ETH_Connector.h"
+#include "Network/CaptivePortal.h"
 #include "Network/WebInterface.h"
 #include "Drivers/I2C_Handler.h"
 #include "Drivers/DmxInput.h"
@@ -55,6 +56,7 @@ void reinitModules() {
     Log.begin(Config::LOG_LEVEL, &logRedirector, true);
 
     DmxInput::setEnabled(Config::InputMode == ConfigDefaults::InputMode::DMX);
+    CaptivePortal::begin(Config::CaptiveGraceMs, Config::CaptiveDurationMs);
 }
 
 void setup() {
@@ -63,7 +65,7 @@ void setup() {
     Config::init();
 
     Log.begin(Config::LOG_LEVEL, &logRedirector, true);
-    Log.infoln("------ Starting Kaleo Node ------");
+    Log.infoln("------ Starting SYNAPSE LNX Node ------");
     Log.infoln("------ Log Level: %s ------", Util::logLevelToString(Config::LOG_LEVEL).c_str());
 
     delay(200); // Wait for HW init
@@ -71,8 +73,13 @@ void setup() {
     ETH_Connector::InitEth();
 
     WebInterface::init();
+    CaptivePortal::begin(Config::CaptiveGraceMs, Config::CaptiveDurationMs);
 
-    I2C_Handler::initI2C(false);
+    if (hw_config::I2C_Enable) {
+        I2C_Handler::initI2C(false);
+    } else {
+        Log.infoln("[I2C] Disabled in hw_config (enable and adjust pins when needed).");
+    }
 
     DmxInput::init();
     DmxInput::setEnabled(Config::InputMode == ConfigDefaults::InputMode::DMX);
@@ -124,14 +131,27 @@ void loop() {
     checkTickTime();
 
     WebInterface::handle();
+    CaptivePortal::update();
     for (auto dmx_fixture: dmxFixtures) {
         dmx_fixture->tick();
     }
 
     if (Config::InputMode == ConfigDefaults::InputMode::DMX) {
+        static bool dmxFallbackActive = false;
         size_t frameSize = 0;
         if (DmxInput::readFrame(dmxInputFrame, sizeof(dmxInputFrame), frameSize)) {
             processDmxData(dmxInputFrame, static_cast<uint16_t>(frameSize));
+            dmxFallbackActive = false;
+        }
+
+        constexpr unsigned long kDmxFallbackTimeoutMs = 1000;
+        if (!DmxInput::isReceiving(kDmxFallbackTimeoutMs)) {
+            if (!dmxFallbackActive) {
+                uint8_t blackout[512] = {};
+                processDmxData(blackout, sizeof(blackout));
+                dmxFallbackActive = true;
+                Log.warningln("[DMX] Fallback active: blackout (no data for %lums)", kDmxFallbackTimeoutMs);
+            }
         }
     }
 

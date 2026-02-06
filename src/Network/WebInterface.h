@@ -47,13 +47,25 @@ public:
 
     static WebLog webLog;
 
+    /**
+     * @brief Enable or disable captive portal mode (serves minimal config UI).
+     */
+    static void setCaptivePortalActive(bool active);
+
+    /**
+     * @brief Returns true if captive portal mode is active.
+     */
+    static bool isCaptivePortalActive();
+
 private:
     static WebServer server;
+    static bool captivePortalActive;
 
     /**
      * @brief Endpoint for the root HTML page.
      */
     static void handleRoot();
+    static void handleNotFound();
 
     /**
      * @brief Endpoint for saving settings.
@@ -76,10 +88,21 @@ private:
     static void handleStatus();
 
     /**
+     * @brief Endpoint for DMX input status.
+     */
+    static void handleDmxStatus();
+
+    /**
      * @brief Generates the full HTML content for the web interface.
      * @return The HTML string.
      */
     static String getHtml();
+
+    /**
+     * @brief Generates a simplified, mobile-friendly captive portal page.
+     * @return The HTML string.
+     */
+    static String getCaptiveHtml();
 };
 
 #endif // WEB_INTERFACE_H

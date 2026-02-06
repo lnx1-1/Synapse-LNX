@@ -74,6 +74,26 @@ void DmxInput::init() {
 
 void DmxInput::setEnabled(bool enable) {
     enabled = enable;
+    if (!initialized) {
+        return;
+    }
+    if (!dmx_driver_is_installed(kDmxPort)) {
+        return;
+    }
+    if (enable) {
+        if (!dmx_driver_is_enabled(kDmxPort)) {
+            dmx_driver_enable(kDmxPort);
+        }
+    } else {
+        if (dmx_driver_is_enabled(kDmxPort)) {
+            dmx_driver_disable(kDmxPort);
+        }
+        portENTER_CRITICAL(&frameMux);
+        frameReady = false;
+        lastFrameSize = 0;
+        lastPacketTime = 0;
+        portEXIT_CRITICAL(&frameMux);
+    }
 }
 
 bool DmxInput::isEnabled() {
