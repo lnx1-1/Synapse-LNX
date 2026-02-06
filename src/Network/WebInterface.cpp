@@ -1,5 +1,6 @@
 #include "WebInterface.h"
 #include <ArduinoLog.h>
+#include "Drivers/DmxInput.h"
 #include <list>
 
 extern std::list<Idmx_FixtureWorker *> dmxFixtures;
@@ -39,6 +40,7 @@ void WebInterface::init() {
     server.on("/toggleLog", HTTP_POST, handleToggleLog);
     server.on("/getLogs", HTTP_GET, handleGetLogs);
     server.on("/status", HTTP_GET, handleStatus);
+    server.on("/dmx", HTTP_GET, handleDmxStatus);
     server.begin();
     Log.infoln("Web Interface started on port 80");
 }
@@ -57,6 +59,9 @@ void WebInterface::handleSave() {
     if (server.hasArg("gateway")) Config::Sys_gateway.fromString(server.arg("gateway"));
     if (server.hasArg("universe")) Config::Universe = server.arg("universe").toInt();
     if (server.hasArg("log_level")) Config::LOG_LEVEL = server.arg("log_level").toInt();
+    if (server.hasArg("input_mode")) {
+        Config::InputMode = static_cast<ConfigDefaults::InputMode>(server.arg("input_mode").toInt());
+    }
 
     Config::save();
 
@@ -94,8 +99,61 @@ void WebInterface::handleGetLogs() {
 }
 
 void WebInterface::handleStatus() {
-    bool receiving = (lastArtnetPacketTime > 0) && (millis() - lastArtnetPacketTime < 2000);
-    server.send(200, "text/plain", receiving ? "active" : "inactive");
+    bool isArtNet = (Config::InputMode == ConfigDefaults::InputMode::ArtNet);
+    bool receiving = false;
+    if (isArtNet) {
+        receiving = (lastArtnetPacketTime > 0) && (millis() - lastArtnetPacketTime < 2000);
+        server.send(200, "text/plain", receiving ? "artnet_active" : "artnet_inactive");
+    } else {
+        receiving = DmxInput::isReceiving(2000);
+        server.send(200, "text/plain", receiving ? "dmx_active" : "dmx_inactive");
+    }
+}
+
+void WebInterface::handleDmxStatus() {
+    const bool isDmxMode = (Config::InputMode == ConfigDefaults::InputMode::DMX);
+    const bool receiving = DmxInput::isReceiving(2000);
+    const unsigned long ageMs = DmxInput::lastPacketAgeMs();
+
+    uint8_t snapshot[512];
+    size_t size = DmxInput::copyLastFrame(snapshot, sizeof(snapshot));
+
+    String html = "<!DOCTYPE html><html><head><title>DMX Input Status</title>";
+    html += "<style>";
+    html += "body { font-family: Arial; margin: 20px; background-color: #f4f4f9; color: #333; }";
+    html += "h1, h2 { color: #4CAF50; }";
+    html += "table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background-color: #fff; }";
+    html += "td, th { border: 1px solid #ddd; padding: 8px; }";
+    html += "th { background-color: #4CAF50; color: white; text-align: left; }";
+    html += ".badge { display:inline-block; padding:4px 8px; border-radius:4px; color:white; }";
+    html += ".ok { background-color:#4CAF50; }";
+    html += ".bad { background-color:#f44336; }";
+    html += "</style>";
+    html += "<meta http-equiv='refresh' content='2'>";
+    html += "</head><body>";
+
+    html += "<h1>DMX Input Status</h1>";
+    html += "<p>Mode: <b>" + String(isDmxMode ? "DMX" : "Art-Net") + "</b></p>";
+    html += "<p>Status: <span class='badge " + String(receiving ? "ok" : "bad") + "'>" +
+            String(receiving ? "Receiving" : "No Data") + "</span></p>";
+    html += "<p>Last Packet Age: " + String(ageMs) + " ms</p>";
+    html += "<p>Frame Size: " + String(size) + " channels</p>";
+
+    html += "<h2>Channels 1-32</h2>";
+    html += "<table><tr><th>Channel</th><th>Value</th></tr>";
+    size_t maxShow = size < 32 ? size : 32;
+    for (size_t i = 0; i < maxShow; ++i) {
+        html += "<tr><td>" + String(i + 1) + "</td><td>" + String(snapshot[i]) + "</td></tr>";
+    }
+    if (maxShow == 0) {
+        html += "<tr><td colspan='2'>No DMX data captured yet.</td></tr>";
+    }
+    html += "</table>";
+
+    html += "<p><a href='/'>Back to main</a></p>";
+    html += "</body></html>";
+
+    server.send(200, "text/html", html);
 }
 
 String WebInterface::getHtml() {
@@ -134,22 +192,19 @@ String WebInterface::getHtml() {
     html += "setInterval(() => {";
     html += "  fetch('/status').then(r => r.text()).then(t => {";
     html += "    const s = document.getElementById('artnetStatus');";
-    html += "    if (t === 'active') {";
-    html += "      s.innerText = 'Art-Net: Receiving';";
-    html += "      s.style.backgroundColor = '#4CAF50';";
-    html += "      s.style.color = 'white';";
-    html += "    } else {";
-    html += "      s.innerText = 'Art-Net: No Data';";
-    html += "      s.style.backgroundColor = '#f44336';";
-    html += "      s.style.color = 'white';";
-    html += "    }";
+    html += "    const isArtNet = t.startsWith('artnet_');";
+    html += "    const active = t.endsWith('_active');";
+    html += "    const label = isArtNet ? 'Art-Net' : 'DMX';";
+    html += "    s.innerText = label + ': ' + (active ? 'Receiving' : 'No Data');";
+    html += "    s.style.backgroundColor = active ? '#4CAF50' : '#f44336';";
+    html += "    s.style.color = 'white';";
     html += "  });";
     html += "}, 1000);";
     html += "</script>";
     html += "</head><body>";
 
     html +=
-            "<h1>Kaleo ArtNet Node <div id='artnetStatus' style='display:inline-block; font-size: 0.5em; vertical-align: middle; padding:5px 10px; border-radius:4px; background-color:#ccc;'>Art-Net: Checking...</div></h1>";
+            "<h1>Kaleo ArtNet Node <div id='artnetStatus' style='display:inline-block; font-size: 0.5em; vertical-align: middle; padding:5px 10px; border-radius:4px; background-color:#ccc;'>Input: Checking...</div></h1>";
 
     html += "<h2>Settings</h2>";
     html += "<form action='/save' method='POST'>";
@@ -161,6 +216,10 @@ String WebInterface::getHtml() {
             "'></td></tr>";
     html += "<tr><td>Gateway</td><td><input type='text' name='gateway' value='" + Config::Sys_gateway.toString() +
             "'></td></tr>";
+    html += "<tr><td>Input Source</td><td><select name='input_mode'>";
+    html += String("<option value='0'") + (Config::InputMode == ConfigDefaults::InputMode::ArtNet ? " selected" : "") + ">Art-Net</option>";
+    html += String("<option value='1'") + (Config::InputMode == ConfigDefaults::InputMode::DMX ? " selected" : "") + ">DMX</option>";
+    html += "</select></td></tr>";
     html += "<tr><td>Art-Net Universe</td><td><input type='text' name='universe' value='" + String(Config::Universe) +
             "'></td></tr>";
 
@@ -209,6 +268,9 @@ String WebInterface::getHtml() {
             "<p style='color: #666; font-size: 0.9em;'><i>Note: Changing hardware-related settings (Pin, LED Count, Color Order) may require a reboot or cause temporary flickering.</i></p>";
     html += "<button type='submit'>Save All Settings</button>";
     html += "</form>";
+
+    html += "<h2>DMX Input Status</h2>";
+    html += "<p><a href='/dmx'>Open DMX status page</a></p>";
 
     html += "<h2>Active Fixtures</h2>";
     html += "<table><tr><th>Type</th><th>DMX Address</th><th>Channels</th><th>Connected</th></tr>";

@@ -1,0 +1,56 @@
+Component,References,Value,Quantity Per PCB,Description,Manufacturer,MPN,DigiKey,LCSC,JLCPCB,Datasheet,manufacturer,mpn,Sim.Pin,Sim.Name,Sim.Device,Sim.Pins,Sim.Params,Sim.Library,AliExpress
+1,C2 C3 C5 C6 C7 C15,0.1uF,6,C0603 0.1uF 50V,YAGEO,CC0603KRX7R9BB104,311-1335-1-ND,C14663,C14663,https://datasheet.lcsc.com/lcsc/2211101700_YAGEO-CC0603KRX7R9BB104_C14663.pdf,YAGEO,CC0603KRX7R9BB104,,,,,,,
+2,C8 C9 C11 C12 C14,1uF,5,C0603 1uF 50V,Samsung Electro-Mechanics,CL10A105KB8NNNC,,,C15849,https://datasheet.lcsc.com/lcsc/2304140030_Samsung-Electro-Mechanics-CL10A105KB8NNNC_C15849.pdf,Samsung Electro-Mechanics,CL10A105KB8NNNC,,,,,,,
+3,C10 C13,10uF,2,C1206 10uF 50V,Samsung Electro-Mechanics,CL31A106KBHNNNE,,,C13585,https://datasheet.lcsc.com/lcsc/2304140030_Samsung-Electro-Mechanics-CL31A106KBHNNNE_C13585.pdf,,,,,,,,,
+4,C1,47uF,1,AEC 47uF 100V 8x12mm,CX(Dongguan Chengxing Elec),KM476M100F12RR0VH2FP0,,C46895,,https://datasheet.lcsc.com/lcsc/2110271330_CX-Dongguan-Chengxing-Elec-KM476M100F12RR0VH2FP0_C46895.pdf,,,,,,,,,
+5,C4,470uF,1,AEC 470uF 6.3V 6.3x7mm,,,,C43328,,,,,,,,,,,
+6,D1,5V6,1,zener 5.6V 200mW,,,,C968206,C19077464,,,,,,,,,,
+7,D8,SRV05-4,1,TVS 4-line 5V,hongjiacheng,SRV05-4A,,C20615829,C20615829,https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2506261420_hongjiacheng-SRV05-4A_C20615829.pdf,,,,,,,,,
+8,D2 D7,SS210,2,schottky 100V 2A,MDD（Microdiode Electronics）,SS210,,C14996,C14996,https://datasheet.lcsc.com/lcsc/2304140030_MDD-Microdiode-Electronics--SS210_C14996.pdf,,,,,,,,,
+9,D3 D4 D5 D6,green,4,LED green 0603,Everlight Elec,19-217/GHC-YR1S2/3T,,C72043,C2986059,https://datasheet.lcsc.com/lcsc/1811101510_Everlight-Elec-19-217-GHC-YR1S2-3T_C72043.pdf,,,1=K 2=A,,,,,,
+10,F1,PTC,1,PTC fuse 3.7A,Jinrui Electronic Materials Co.,JK60-185,,C369091,,https://omo-oss-file.thefastfile.com/portal-saas/new2022090111484395596/cms/file/96a36e42-2262-4bf8-9c83-71b3fcc4236e.pdf,,,,,,,,,
+11,J3,5+V_SCREW,1,"barrier terminal, 7.62mm, 2 pos",MAX,MX25C-7.62-02P-BK01-Cu-S-A,,C5188509,,https://datasheet.lcsc.com/lcsc/2309150931_MAX-MX25C-7-62-02P-BK01-Cu-S-A_C5188509.pdf,MAX,MX25C-7.62-02P-BK01-Cu-S-A,,,,,,,
+12,J2,5V_SCREW,1,"barrier terminal, 7.62mm, 2 pos",MAX,MX25C-7.62-02P-BK01-Cu-S-A,,C5188509,,https://datasheet.lcsc.com/lcsc/2309150931_MAX-MX25C-7-62-02P-BK01-Cu-S-A_C5188509.pdf,MAX,MX25C-7.62-02P-BK01-Cu-S-A,,,,,,,
+13,J4,8+V_JACK,1,DC jack barrel 2x6.4mm,,,,C16214,,,,,,,,,,,
+14,J5,I/O,1 (DNF),"Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)",,,,C37208,,~,,,,,,,,,
+15,J1 J7,USB-C,2,"USB type-C receptacle 16p, SMD + 4 tabs",XKB Connection,U263-163N-4BLS1735,,C2931474,C2931474,https://www.helloxkb.com/public/images/pdf/U263-16XN-4BS1735.pdf,,,,,,,,,
+16,J10 J11,WT32-ETH01_left,2,"Generic connector, single row, 01x13, script generated (kicad-library-utils/schlib/autogen/connector/)",,,,,C2685211,~,,,,,,,,,
+17,J12,spring terminal,1,"spring terminal block, 3.5mm pitch, vertical, 3-pin",Cixi Kefa Elec,KF250-3.5-3P-1,,C475155,,https://a3.ldycdn.com/KF250-3.5-aidqkBpqKirRljSkrnijolli.pdf,,,,,,,,,
+18,L1,15uH,1,15uH 3A,cjiang (Changjiang Microelectronics Tech),FXL0630-150-M,,C177243,,https://datasheet.lcsc.com/lcsc/2305161117_cjiang--Changjiang-Microelectronics-Tech-FXL0630-150-M_C177243.pdf,,,,,,,,,
+19,Q3 Q4,HL2309,2,pMOS 60V 1.25A,hongjiacheng,HL2309,,,C28646263,https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2410010233_hongjiacheng-HL2309_C28646263.pdf,,,,,,,,,
+20,Q1 Q2 Q5,S8050,3,NPN 25V 1.5A,"Jiangsu Changjing Electronics Technology Co., Ltd.",SS8050(RANGE:200-350),,,C2150,https://datasheet.lcsc.com/lcsc/2303221100_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--SS8050-RANGE-200-350_C2150.pdf,,,,,,,,,
+21,R4 R5 R6 R15,100,4,R0603 100 1%,UNI-ROYAL(Uniroyal Elec),0603WAF1000T5E,,C22775,C22775,https://datasheet.lcsc.com/lcsc/2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf,UNI-ROYAL(Uniroyal Elec),0603WAF1000T5E,,,,,,,
+22,R19,1k,1,R0603 1k 1%,UNI-ROYAL(Uniroyal Elec),0603WAF1001T5E,,C21190,C21190,https://datasheet.lcsc.com/lcsc/2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1001T5E_C21190.pdf,,,,,,,,,
+23,R1 R2,5.1k,2,R0603 5.1K 1%,UNI-ROYAL(Uniroyal Elec),0603WAF5101T5E,,C23186,C23186,"resistor, chip, 1.6x0.8 mm",UNI-ROYAL(Uniroyal Elec),0603WAF5101T5E,,,,,,,
+24,R18,8.2k,1,R0603 8.2k,UNI-ROYAL(Uniroyal Elec),0603WAF8201T5E,,C25981,C25981,https://datasheet.lcsc.com/lcsc/2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF8201T5E_C25981.pdf,,,,,,,,,
+25,R3 R8 R9 R10 R11 R12 R13 R14 R21 R23 R24,10k,11,R0603 10k 1%,UNI-ROYAL(Uniroyal Elec),0603WAF1002T5E,,C25804,,https://datasheet.lcsc.com/lcsc/2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1002T5E_C25804.pdf,UNI-ROYAL(Uniroyal Elec),0603WAF1002T5E,,,,,,,
+26,R20,24k,1,R0603 24k,UNI-ROYAL(Uniroyal Elec),0603WAF2402T5E,,C23352,,https://datasheet.lcsc.com/lcsc/2206010100_UNI-ROYAL-Uniroyal-Elec-0603WAF2402T5E_C23352.pdf,,,,,,,,,
+27,R7 R17,47k,2,R0603 47k 1%,UNI-ROYAL(Uniroyal Elec),0603WAF4702T5E,,C25804,C25819,https://datasheet.lcsc.com/lcsc/2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF4702T5E_C25819.pdf,,,,,,,,,
+28,R16 R22,100k,2,R0603 100k 1%,UNI-ROYAL(Uniroyal Elec),0603WAF1003T5E,,C25803,C25803,https://datasheet.lcsc.com/lcsc/2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF1003T5E_C25803.pdf,,,,,,,,,
+29,RV1,60V,1,MOV varistor 82V,R+O,HMLV1206-820G,,C49247588,,https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2507031705_R-O-HMLV1206-820G_C49247588.pdf,,,,kicad_builtin_varistor,SUBCKT,1=A 2=B,threshold=1k,${KICAD9_SYMBOL_DIR}/Simulation_SPICE.sp,
+30,SW1 SW3,BTN,2,"SMD, momentary, 5.1x5.1mm, 50mA@12VDC",XKB,TS-1187A-B-A-B,,C318884,C318884,https://www.helloxkb.com/public/images/pdf/TS-1187A-X-X-X.pdf,,,,,,,,,
+31,SW2,BTN,1 (DNF),"SMD, momentary, 5.1x5.1mm, 50mA@12VDC",XKB,TS-1187A-B-A-B,,C318884,C318884,https://www.helloxkb.com/public/images/pdf/TS-1187A-X-X-X.pdf,,,,,,,,,
+32,SW4,SW_DP3T,1,switch DP3T,SHOU HAN,MST23D18G2 125,,C2906281,,https://datasheet.lcsc.com/lcsc/2110190930_SHOU-HAN-MST23D18G2-125_C2906281.pdf,,,,,,,,,
+33,U4,74HC14D,1,6x schmitt trigger inverter,Nexperia,"74HC14D,653",,,C5605,https://assets.nexperia.com/documents/data-sheet/74HC_HCT14.pdf,,,,,,,,,
+34,U7,CH224K,1,USB PD sink,WCH,CH224K,,C970725,,https://www.wch-ic.com/downloads/CH224DS1_PDF.html,,,,,,,,,
+35,U2,CH340K,1,USB to UART transceiver,WCH,CH340K,,C968586,,http://www.wch-ic.com/downloads/file/79.html,,,,,,,,,
+36,U1,LMR16030,1,buck 4.53-60V 3A,Texas Instruments,LMR16030PDDAR,,C90665,,https://www.ti.com/lit/gpn/lmr16030,,,,,,,,,
+37,U6,MAX3485ESA,1,"RS-485 transceiver, 3V",,,,C2841835,,https://www.analog.com/media/en/technical-documentation/data-sheets/MAX3483-MAX3491.pdf,,,,,,,,,
+38,U5,MP34DT05-A,1,MEMS microphone with PDM,STMicroelectronics,MP34DT05TR-A,,C2937733,,https://www.st.com/resource/en/datasheet/mp34dt05-a.pdf,STMicroelectronics,MP34DT05TR-A,,,,,,,
+39,U3,WT32-ETH01,1,ESP32 board with ethernet,Wireless-Tag,WT32-ETH01,,C477837,,https://img01.71360.com/file/read/www2/M00/58/3F/rBwBEmRwFCWAaOK7AAvlVcuqEQk621.pdf?dl=1&dlf=WT32-ETH01_datasheet_V1.3+-+en.pdf,,,,,,,,,1005005967733312
+
+
+
+
+
+Component Groups:,39
+Component Count:,75
+Fitted Components:,73
+Number of PCBs:,1
+Total components:,73
+Schematic Version:,v0.49
+Schematic Date:,2025-12-01
+PCB Variant:,default
+BoM Date:,2025-12-01T14:44:06+0100
+Schematic Source:,wled-eth.versioned.kicad_sch
+KiCad Version:,Eeschema 9.0.6

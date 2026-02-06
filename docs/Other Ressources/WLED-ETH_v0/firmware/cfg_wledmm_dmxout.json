@@ -1,0 +1,45 @@
+{
+    "source_id": "2",
+    "branch": {
+        "type": "branch",
+        "bname": "mdev"
+    },
+    "enviroment": "esp32dev",
+    "username": "moonmodules",
+    "reponame": "WLED-MM",
+    "details": [
+
+    ],
+    "settings": [
+        {
+            "id": 900,
+            "name": "Enable DMX support (hardware: MAX485 on TX Pin needed, ATTENTION: Does not compile/work togeter with AudioRective WLED, use AR disable option if required)"
+        },
+        {
+            "id": 1000,
+            "name": "Enable Ethernet support"
+        },
+        {
+            "id": 2900,
+            "name": "Set default LED pin GPIO number: ",
+            "numval": "14"
+        },
+        {
+            "id": 3000,
+            "name": "Set default button pin GPIO number: ",
+            "numval": "39"
+        },
+        {
+            "id": 5300,
+            "name": "Define the name of the internal WiFI Access Point (default: WLED-AP)",
+            "stringval": "WLED-ETH"
+        }
+    ],
+    "usermods": [
+
+    ],
+    "envtextfield": "[env:custom_build]\nextends = env:esp32dev\nbuild_flags = ${env:esp32dev.build_flags} -D WLED_ENABLE_DMX -D WLED_USE_ETHERNET -D DATA_PINS=14,4,12 -D BTNPIN=39 -D WLED_AP_SSID='\"WLED-ETH\"'",
+    "hacks": [
+
+    ]
+}

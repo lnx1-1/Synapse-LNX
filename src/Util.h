@@ -1,0 +1,16 @@
+//
+// Created by lnx on 06.02.2026.
+//
+
+#ifndef KALEO_MODULARARTNETNODE_UTIL_H
+#define KALEO_MODULARARTNETNODE_UTIL_H
+
+
+
+class Util {
+
+};
+
+
+
+#endif //KALEO_MODULARARTNETNODE_UTIL_H

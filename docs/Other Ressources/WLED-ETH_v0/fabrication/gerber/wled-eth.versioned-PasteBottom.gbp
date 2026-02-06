@@ -1,0 +1,23 @@
+G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,9.0.6*
+G04 #@! TF.CreationDate,2025-12-01T14:44:23+01:00*
+G04 #@! TF.ProjectId,wled-eth.versioned,776c6564-2d65-4746-982e-76657273696f,v0.49*
+G04 #@! TF.SameCoordinates,Original*
+G04 #@! TF.FileFunction,Paste,Bot*
+G04 #@! TF.FilePolarity,Positive*
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 9.0.6) date 2025-12-01 14:44:23*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+%ADD10R,0.750000X1.000000*%
+G04 APERTURE END LIST*
+D10*
+G04 #@! TO.C,SW2*
+X5800000Y-94900000D03*
+X5800000Y-100900000D03*
+X9550000Y-94900000D03*
+X9550000Y-100900000D03*
+G04 #@! TD*
+M02*

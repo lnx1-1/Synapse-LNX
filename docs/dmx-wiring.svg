@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="420" viewBox="0 0 800 420">
+  <defs>
+    <style>
+      .box { fill: #f8f8fb; stroke: #2c3e50; stroke-width: 2; }
+      .title { font: bold 18px Arial, sans-serif; fill: #2c3e50; }
+      .label { font: 14px Arial, sans-serif; fill: #2c3e50; }
+      .line { stroke: #2c3e50; stroke-width: 3; }
+      .line-plus { stroke: #27ae60; stroke-width: 3; }
+      .line-minus { stroke: #c0392b; stroke-width: 3; }
+      .line-gnd { stroke: #2980b9; stroke-width: 3; }
+      .note { font: 12px Arial, sans-serif; fill: #555; }
+    </style>
+  </defs>
+
+  <rect x="40" y="40" width="200" height="120" class="box" />
+  <text x="60" y="70" class="title">DMX IN</text>
+  <text x="60" y="100" class="label">Data+ (D+ / A)</text>
+  <text x="60" y="120" class="label">Data- (D- / B)</text>
+  <text x="60" y="140" class="label">GND / Shield</text>
+
+  <rect x="560" y="40" width="200" height="120" class="box" />
+  <text x="580" y="70" class="title">DMX OUT / THRU</text>
+  <text x="580" y="100" class="label">Data+ (D+ / A)</text>
+  <text x="580" y="120" class="label">Data- (D- / B)</text>
+  <text x="580" y="140" class="label">GND / Shield</text>
+
+  <rect x="300" y="220" width="200" height="140" class="box" />
+  <text x="320" y="250" class="title">Board Header</text>
+  <text x="320" y="280" class="label">D1+</text>
+  <text x="320" y="300" class="label">D1-</text>
+  <text x="320" y="320" class="label">GND</text>
+
+  <line x1="240" y1="100" x2="300" y2="280" class="line-plus" />
+  <line x1="240" y1="120" x2="300" y2="300" class="line-minus" />
+  <line x1="240" y1="140" x2="300" y2="320" class="line-gnd" />
+
+  <line x1="500" y1="280" x2="560" y2="100" class="line-plus" />
+  <line x1="500" y1="300" x2="560" y2="120" class="line-minus" />
+  <line x1="500" y1="320" x2="560" y2="140" class="line-gnd" />
+
+  <text x="60" y="190" class="note">Pass-through: IN and OUT are wired in parallel to the same three lines.</text>
+  <text x="60" y="210" class="note">Swap D1+ / D1- if your fixture labels A/B differently.</text>
+</svg>

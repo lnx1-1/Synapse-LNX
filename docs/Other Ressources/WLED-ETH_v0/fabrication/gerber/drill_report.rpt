@@ -1,0 +1,33 @@
+Drill report for wled-eth.versioned.kicad_pcb
+Created on 2025-12-01T14:44:23+0100
+
+Copper Layer Stackup:
+    =============================================================
+    L1 :  F.Cu                      front
+    L2 :  B.Cu                      back
+
+
+Drill file 'wled-eth.versioned-PTH.drl' contains
+    plated through holes:
+    =============================================================
+    T1  0.300mm  0.0118"  (50 holes)
+    T2  0.400mm  0.0157"  (58 holes)
+    T3  0.500mm  0.0197"  (48 holes)
+    T4  0.600mm  0.0236"  (8 holes)  (with 8 slots)
+    T5  0.650mm  0.0256"  (4 holes)
+    T6  0.700mm  0.0276"  (4 holes)
+    T7  0.800mm  0.0315"  (3 holes)  (with 3 slots)
+    T8  1.000mm  0.0394"  (37 holes)
+    T9  1.152mm  0.0454"  (3 holes)
+    T10  1.200mm  0.0472"  (3 holes)
+    T11  1.700mm  0.0669"  (4 holes)
+    T12  2.500mm  0.0984"  (6 holes)
+
+    Total plated holes count 228
+
+
+Drill file 'wled-eth.versioned-NPTH.drl' contains
+    unplated through holes:
+    =============================================================
+
+    Total unplated holes count 0

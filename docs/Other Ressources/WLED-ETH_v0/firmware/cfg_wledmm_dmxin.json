@@ -1,0 +1,69 @@
+{
+    "source_id": "2",
+    "branch": {
+        "type": "branch",
+        "bname": "mdev"
+    },
+    "enviroment": "esp32_4MB_V4_S",
+    "username": "moonmodules",
+    "reponame": "WLED-MM",
+    "details": [
+
+    ],
+    "settings": [
+        {
+            "id": 1000,
+            "name": "Enable Ethernet support"
+        },
+        {
+            "id": 2600,
+            "name": "Disable Alexa support"
+        },
+        {
+            "id": 2700,
+            "name": "Disable Philips Hue support"
+        },
+        {
+            "id": 2900,
+            "name": "Set default LED pin GPIO number: ",
+            "numval": "4"
+        },
+        {
+            "id": 3000,
+            "name": "Set default button pin GPIO number: ",
+            "numval": "39"
+        },
+        {
+            "id": 3500,
+            "name": "Enable and define dig. mic. type by number: ",
+            "numval": "5"
+        },
+        {
+            "id": 3600,
+            "name": "Define I2S SD pin number: ",
+            "numval": "36"
+        },
+        {
+            "id": 3700,
+            "name": "Define I2S WS pin number: ",
+            "numval": "15"
+        },
+        {
+            "id": 3800,
+            "name": "Define I2S SCK pin number: ",
+            "numval": "-1"
+        },
+        {
+            "id": 5300,
+            "name": "Define the name of the internal WiFI Access Point (default: WLED-AP)",
+            "stringval": "WLED-ETH"
+        }
+    ],
+    "usermods": [
+
+    ],
+    "envtextfield": "[env:custom_build]\nextends = env:esp32_4MB_V4_S\nbuild_flags = ${env:esp32_4MB_V4_S.build_flags} -D WLED_USE_ETHERNET -D WLED_DISABLE_ALEXA -D WLED_DISABLE_HUESYNC -D DATA_PINS=14,4,12 -D BTNPIN=39 -D DMENABLED=5 -D SR_DMTYPE=5 -D I2S_SDPIN=36 -D I2S_WSPIN=15 -D I2S_CKPIN=-1 -D WLED_AP_SSID='\"WLED-ETH\"'",
+    "hacks": [
+
+    ]
+}

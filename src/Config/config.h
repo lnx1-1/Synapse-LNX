@@ -16,7 +16,12 @@ namespace ConfigDefaults {
     const IPAddress SUBNET{255, 255, 255, 0};
     const IPAddress GATEWAY{10, 0, 0, 1};
     const int UNIVERSE = 1;
-    const int LOG_LEVEL = LOG_LEVEL_VERBOSE;
+    const int LOG_LEVEL = LOG_LEVEL_NOTICE;
+    enum class InputMode : uint8_t {
+        ArtNet = 0,
+        DMX = 1
+    };
+    const InputMode INPUT_MODE = InputMode::ArtNet;
 }
 
 class Config {
@@ -26,6 +31,7 @@ public:
     static IPAddress Sys_ip;
     static IPAddress Sys_subnet;
     static IPAddress Sys_gateway;
+    static ConfigDefaults::InputMode InputMode;
 
     static void init();
 
