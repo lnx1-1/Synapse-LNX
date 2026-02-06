@@ -1,4 +1,9 @@
-# Kaleo a ModularArtNetNode
+# SYNAPSE LNX
+
+connect the chaos
+
+SYNAPSE LNX ist ein modulares, zentrales Steuer- und Orchestrierungssystem für komplexe Installationen.
+Es fungiert als künstliches Nervensystem, das Licht, Medien, Maschinen, Sensoren und Netzwerkkomponenten miteinander verbindet.
 
 Modular ArtNet firmware framework for ESP32 with flexible fixture modules - RGB, servos, relays, motors, and more.
 
