@@ -107,12 +107,6 @@ private:
      * @return The HTML string.
      */
     static String getHtml();
-
-    /**
-     * @brief Generates a simplified, mobile-friendly captive portal page.
-     * @return The HTML string.
-     */
-    static String getCaptiveHtml();
 };
 
 #endif // WEB_INTERFACE_H

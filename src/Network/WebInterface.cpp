@@ -89,16 +89,13 @@ void WebInterface::handle() {
 }
 
 void WebInterface::handleRoot() {
-    if (captivePortalActive) {
-        server.send(200, "text/html", getCaptiveHtml());
-        return;
-    }
     server.send(200, "text/html", getHtml());
 }
 
 void WebInterface::handleNotFound() {
     if (captivePortalActive) {
-        server.send(200, "text/html", getCaptiveHtml());
+        // Captive portal DNS points unknown paths here, always present full config UI.
+        server.send(200, "text/html", getHtml());
         return;
     }
     server.send(404, "text/plain", "Not found");
@@ -380,6 +377,9 @@ String WebInterface::getHtml() {
     html += "<div class='brand'>SYNAPSE LNX</div>";
     html += "<div class='tagline'>connect the chaos</div>";
     html += "<div class='subtitle'>Modulares Art-Net/DMX Steuer- und Orchestrierungssystem</div>";
+    if (captivePortalActive) {
+        html += "<div class='note'><b>Captive Setup Mode Active:</b> You are connected to the Synapse setup hotspot.</div>";
+    }
     html += "<div class='note'>Firmware: <b>" + String(SYNAPSE_FW_VERSION) + "</b></div>";
     html += "</div>";
     html += "<div id='artnetStatus' class='status-pill'>Input: Checking...</div>";
@@ -490,67 +490,5 @@ String WebInterface::getHtml() {
     html += "<div id='logContainer'>" + webLog.getLogs() + "</div>";
 
     html += "</body></html>";
-    return html;
-}
-
-String WebInterface::getCaptiveHtml() {
-    String html = "<!DOCTYPE html><html><head><title>SYNAPSE LNX Setup</title>";
-    html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
-    html += "<style>";
-    html += ":root{--bg0:#0b0f14;--bg1:#0f1b2b;--bg2:#082a2f;--panel:#111a24;--panel2:#0c141c;";
-    html += "--text:#e7f1f7;--muted:#a8b5c2;--accent:#2bd9d9;--accent2:#ff8a3d;--line:#1f2d3b;";
-    html += "--shadow:0 10px 30px rgba(0,0,0,.35)}";
-    html += "body{font-family:'Space Grotesk','Exo 2','Trebuchet MS',sans-serif;margin:0;color:var(--text);";
-    html += "background:";
-    html += "radial-gradient(900px 400px at 80% -10%, rgba(43,217,217,.18), transparent 60%),";
-    html += "radial-gradient(700px 300px at 10% 0%, rgba(255,138,61,.15), transparent 55%),";
-    html += "linear-gradient(140deg,var(--bg0),var(--bg1) 55%,var(--bg2));}";
-    html += ".wrap{max-width:560px;margin:0 auto;padding:20px;}";
-    html += ".card{background:linear-gradient(120deg,rgba(17,26,36,.9),rgba(12,20,28,.95));";
-    html += "border-radius:14px;padding:18px;border:1px solid var(--line);box-shadow:var(--shadow);}";
-    html += ".brand{font-size:1.2rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}";
-    html += ".tagline{font-size:.8rem;letter-spacing:.3em;text-transform:lowercase;color:var(--muted);margin-bottom:10px;}";
-    html += "h1{font-size:1.3rem;margin:0 0 8px;color:var(--accent);}";
-    html += "label{display:block;font-size:.9rem;margin:12px 0 6px;color:var(--muted);}";
-    html += "input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:1rem;";
-    html += "background:var(--panel2);color:var(--text);}";
-    html += "button{margin-top:16px;width:100%;padding:12px;border:0;border-radius:999px;";
-    html += "background:linear-gradient(120deg,var(--accent),var(--accent2));color:#0b0f14;font-size:1rem;font-weight:700;}";
-    html += ".note{font-size:.85rem;color:var(--muted);margin-top:8px;}";
-    html += "</style></head><body><div class='wrap'><div class='card'>";
-    html += "<div class='brand'>SYNAPSE LNX</div>";
-    html += "<div class='tagline'>connect the chaos</div>";
-    html += "<h1>Setup Portal</h1>";
-    html += "<p class='note'>Firmware: <b>" + String(SYNAPSE_FW_VERSION) + "</b></p>";
-    html += "<p class='note'>Ethernet not ready. Configure network & input mode below.</p>";
-    html += "<form action='/save' method='POST'>";
-    html += "<label>IP Address</label><input name='ip' value='" + Config::Sys_ip.toString() + "'>";
-    html += "<label>Subnet Mask</label><input name='subnet' value='" + Config::Sys_subnet.toString() + "'>";
-    html += "<label>Gateway</label><input name='gateway' value='" + Config::Sys_gateway.toString() + "'>";
-    html += "<label>Universe</label><input name='universe' type='number' value='" + String(Config::Universe) + "'>";
-    html += "<label>Input Source</label><select name='input_mode'>";
-    html += String("<option value='0'") + (Config::InputMode == ConfigDefaults::InputMode::ArtNet ? " selected" : "") + ">Art-Net</option>";
-    html += String("<option value='1'") + (Config::InputMode == ConfigDefaults::InputMode::DMX ? " selected" : "") + ">DMX</option>";
-    html += "</select>";
-    html += "<label>Captive Portal Enabled</label><select name='cap_enabled'>";
-    html += String("<option value='1'") + (Config::CaptiveEnabled ? " selected" : "") + ">Yes</option>";
-    html += String("<option value='0'") + (!Config::CaptiveEnabled ? " selected" : "") + ">No</option>";
-    html += "</select>";
-    html += "<label>Grace (seconds)</label><input name='cap_grace_s' type='number' min='0' value='" + String(millisToSeconds(Config::CaptiveGraceMs)) + "'>";
-    html += "<p class='note'>Wait this long after boot before opening the setup hotspot if Ethernet is still offline.</p>";
-    html += "<label>Duration (seconds)</label><input name='cap_duration_s' type='number' min='0' value='" + String(millisToSeconds(Config::CaptiveDurationMs)) + "'>";
-    html += "<p class='note'>Keep the setup hotspot active for this long. Set 0 to keep it active until Ethernet connects.</p>";
-    html += "<label>SSID Base</label><input name='cap_ssid' value='" + Config::CaptiveSsid + "'>";
-    html += "<label>Password</label><input name='cap_pass' value='" + Config::CaptivePass + "'>";
-    html += "<button type='submit'>Save & Apply</button>";
-    html += "</form>";
-    html += "<h1 style='margin-top:22px'>Firmware Update</h1>";
-    html += "<p class='note'>Upload a new Synapse firmware file (.bin). The node restarts automatically after a successful update.</p>";
-    html += "<form action='/update' method='POST' enctype='multipart/form-data'>";
-    html += "<label>Firmware (.bin)</label><input type='file' name='update' accept='.bin,application/octet-stream' required>";
-    html += "<button type='submit'>Upload & Update Synapse</button>";
-    html += "</form>";
-    html += "<p class='note'>After saving, the device reinitializes networking.</p>";
-    html += "</div></div></body></html>";
     return html;
 }
