@@ -27,6 +27,7 @@ namespace ConfigDefaults {
     const uint32_t CAPTIVE_DURATION_MS = 180000;
     const char CAPTIVE_SSID[] = "SYNAPSE-LNX-Setup";
     const char CAPTIVE_PASS[] = "connectchaos";
+    const uint32_t DMX_BLACKOUT_TIMEOUT_MS = 2000;
 }
 
 class Config {
@@ -40,6 +41,7 @@ public:
     static bool CaptiveEnabled;
     static uint32_t CaptiveGraceMs;
     static uint32_t CaptiveDurationMs;
+    static uint32_t DmxBlackoutTimeoutMs;
     static String CaptiveSsid;
     static String CaptivePass;
 

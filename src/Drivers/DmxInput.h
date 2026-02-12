@@ -9,20 +9,28 @@
 
 class DmxInput {
 public:
+    using FrameCallback = void (*)(const uint8_t *data, uint16_t size);
+
     static void init();
 
     static void setEnabled(bool enabled);
 
-    static bool isEnabled();
+    /**
+     * @brief Set the number of DMX slots (including start code) expected by the receiver.
+     * Values are clamped to [2..513].
+     */
+    static void setReceiveSlotCount(size_t slotCount);
 
     /**
-     * @brief Copy the latest DMX frame into the provided buffer.
-     * @param out Buffer to receive DMX data (channels only, start code removed).
-     * @param outSize Size of the output buffer.
-     * @param frameSize Output: number of bytes written into out.
-     * @return True if a new frame was copied, false otherwise.
+     * @brief Register callback invoked when a new DMX frame is available.
      */
-    static bool readFrame(uint8_t *out, size_t outSize, size_t &frameSize);
+    static void setFrameCallback(FrameCallback callback);
+
+    /**
+     * @brief Dispatches buffered DMX frames to the registered callback.
+     * Call this from loop().
+     */
+    static void handle();
 
     /**
      * @brief Copy the last captured DMX channels without consuming the frame-ready flag.

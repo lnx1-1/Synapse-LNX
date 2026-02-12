@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <ArtnetETH.h>
 #include <list>
+#include <algorithm>
 #include <Wire.h>
 #include <ArduinoLog.h>
 #include "Config/config.h"
@@ -14,7 +15,6 @@
 #include "Network/WebInterface.h"
 #include "Drivers/I2C_Handler.h"
 #include "Drivers/DmxInput.h"
-#include <cstring>
 
 #include "Util.h"
 
@@ -22,7 +22,43 @@ ArtnetETHReceiver artnetRecv;
 
 unsigned long lastArtnetPacketTime = 0;
 std::list<Idmx_FixtureWorker *> dmxFixtures;
-uint8_t dmxInputFrame[512];
+
+namespace {
+    constexpr size_t kDmxMaxSlotsWithStartCode = 513;
+
+    size_t computeRequiredDmxReceiveSlots() {
+        size_t maxChannel = 0;
+        for (Idmx_FixtureWorker *worker: dmxFixtures) {
+            if (worker == nullptr) {
+                continue;
+            }
+            const uint16_t address = worker->_fixture.dmxAddress;
+            const uint8_t channelCount = worker->_fixture.channelCount;
+            if (address == 0 || channelCount == 0) {
+                continue;
+            }
+            const size_t endChannel = static_cast<size_t>(address) + static_cast<size_t>(channelCount) - 1U;
+            maxChannel = std::max(maxChannel, endChannel);
+        }
+
+        if (maxChannel == 0) {
+            return kDmxMaxSlotsWithStartCode;
+        }
+
+        const size_t requiredSlots = maxChannel + 1U; // Include start code slot.
+        if (requiredSlots > kDmxMaxSlotsWithStartCode) {
+            Log.warningln("[DMX] Required slots %u exceed DMX max %u. Clamping.",
+                          static_cast<unsigned>(requiredSlots),
+                          static_cast<unsigned>(kDmxMaxSlotsWithStartCode));
+        }
+        return requiredSlots > kDmxMaxSlotsWithStartCode ? kDmxMaxSlotsWithStartCode : requiredSlots;
+    }
+
+    void updateDmxReceiveSlotsFromFixtures() {
+        const size_t requiredSlots = computeRequiredDmxReceiveSlots();
+        DmxInput::setReceiveSlotCount(requiredSlots);
+    }
+}
 
 class LogRedirector : public Print {
 public:
@@ -55,6 +91,7 @@ void reinitModules() {
     Log.infoln("[ArtNet] Re-Subscribed to Universe %d", Config::Universe);
     Log.begin(Config::LOG_LEVEL, &logRedirector, true);
 
+    updateDmxReceiveSlotsFromFixtures();
     DmxInput::setEnabled(Config::InputMode == ConfigDefaults::InputMode::DMX);
     CaptivePortal::begin(Config::CaptiveGraceMs, Config::CaptiveDurationMs);
 }
@@ -83,6 +120,7 @@ void setup() {
 
     DmxInput::init();
     DmxInput::setEnabled(Config::InputMode == ConfigDefaults::InputMode::DMX);
+    DmxInput::setFrameCallback(processDmxData);
 
     artnetRecv.begin();
     artnetRecv.subscribeArtDmxUniverse(Config::Universe, artnetReceiveCallback);
@@ -104,6 +142,7 @@ void setup() {
         }
     }
 
+    updateDmxReceiveSlotsFromFixtures();
     Log.infoln("------ Setup Done ------");
 }
 
@@ -138,14 +177,12 @@ void loop() {
 
     if (Config::InputMode == ConfigDefaults::InputMode::DMX) {
         static bool dmxFallbackActive = false;
-        size_t frameSize = 0;
-        if (DmxInput::readFrame(dmxInputFrame, sizeof(dmxInputFrame), frameSize)) {
-            processDmxData(dmxInputFrame, static_cast<uint16_t>(frameSize));
-            dmxFallbackActive = false;
-        }
+        DmxInput::handle();
 
-        constexpr unsigned long kDmxFallbackTimeoutMs = 1000;
-        if (!DmxInput::isReceiving(kDmxFallbackTimeoutMs)) {
+        const uint32_t kDmxFallbackTimeoutMs = Config::DmxBlackoutTimeoutMs;
+        if (DmxInput::isReceiving(kDmxFallbackTimeoutMs)) {
+            dmxFallbackActive = false;
+        } else {
             if (!dmxFallbackActive) {
                 uint8_t blackout[512] = {};
                 processDmxData(blackout, sizeof(blackout));
@@ -172,17 +209,39 @@ void artnetReceiveCallback(const uint8_t *data, uint16_t size,
 }
 
 void processDmxData(const uint8_t *data, uint16_t size) {
+    if (data == nullptr || size == 0) {
+        return;
+    }
+
+    static unsigned long lastBoundsWarnMs = 0;
+    const size_t frameSize = size;
+
     for (Idmx_FixtureWorker *worker: dmxFixtures) {
-        int startIndex = worker->_fixture.dmxAddress - 1;
-        // DMX addresses are 1-based, so we add 1 to the fixture's address
-        auto count = worker->_fixture.channelCount;
-        count = std::min<uint16_t>(count, size);
-        if (startIndex >= 0) {
-            worker->SendValues(&(data[startIndex]), count);
-        } else {
-            Log.errorln("Error DMX Addr Values. Bounds not correct");
+        if (worker->_fixture.dmxAddress == 0) {
+            Log.errorln("[%s] Invalid DMX address 0", worker->_fixture.toString());
+            continue;
         }
+
+        // DMX addresses are 1-based.
+        const size_t startIndex = static_cast<size_t>(worker->_fixture.dmxAddress - 1U);
+        if (startIndex >= frameSize) {
+            const unsigned long now = millis();
+            if ((now - lastBoundsWarnMs) > 2000) {
+                Log.warningln("[%s] DMX address %u outside received framesize %u (ignoring update)",
+                              worker->_fixture.toString(),
+                              static_cast<unsigned>(worker->_fixture.dmxAddress),
+                              static_cast<unsigned>(frameSize));
+                lastBoundsWarnMs = now;
+            }
+            continue;
+        }
+
+        const size_t availableChannels = frameSize - startIndex;
+        const size_t count = std::min<size_t>(worker->_fixture.channelCount, availableChannels);
+        if (count == 0) {
+            continue;
+        }
+
+        worker->SendValues(&(data[startIndex]), count);
     }
 }
-
-

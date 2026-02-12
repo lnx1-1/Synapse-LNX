@@ -12,6 +12,7 @@ ConfigDefaults::InputMode Config::InputMode = ConfigDefaults::INPUT_MODE;
 bool Config::CaptiveEnabled = ConfigDefaults::CAPTIVE_ENABLE;
 uint32_t Config::CaptiveGraceMs = ConfigDefaults::CAPTIVE_GRACE_MS;
 uint32_t Config::CaptiveDurationMs = ConfigDefaults::CAPTIVE_DURATION_MS;
+uint32_t Config::DmxBlackoutTimeoutMs = ConfigDefaults::DMX_BLACKOUT_TIMEOUT_MS;
 String Config::CaptiveSsid = ConfigDefaults::CAPTIVE_SSID;
 String Config::CaptivePass = ConfigDefaults::CAPTIVE_PASS;
 
@@ -35,6 +36,7 @@ void Config::save() {
     prefs.putBool("cap_en", Config::CaptiveEnabled);
     prefs.putUInt("cap_grace", Config::CaptiveGraceMs);
     prefs.putUInt("cap_dur", Config::CaptiveDurationMs);
+    prefs.putUInt("dmx_blk_to", Config::DmxBlackoutTimeoutMs);
     prefs.putString("cap_ssid", Config::CaptiveSsid);
     prefs.putString("cap_pass", Config::CaptivePass);
     prefs.end();
@@ -57,6 +59,7 @@ void Config::load() {
     Config::CaptiveEnabled = prefs.getBool("cap_en", ConfigDefaults::CAPTIVE_ENABLE);
     Config::CaptiveGraceMs = prefs.getUInt("cap_grace", ConfigDefaults::CAPTIVE_GRACE_MS);
     Config::CaptiveDurationMs = prefs.getUInt("cap_dur", ConfigDefaults::CAPTIVE_DURATION_MS);
+    Config::DmxBlackoutTimeoutMs = prefs.getUInt("dmx_blk_to", ConfigDefaults::DMX_BLACKOUT_TIMEOUT_MS);
     Config::CaptiveSsid = prefs.getString("cap_ssid", ConfigDefaults::CAPTIVE_SSID);
     Config::CaptivePass = prefs.getString("cap_pass", ConfigDefaults::CAPTIVE_PASS);
 
@@ -71,6 +74,7 @@ void Config::load() {
     Config::CaptiveEnabled = ConfigDefaults::CAPTIVE_ENABLE;
     Config::CaptiveGraceMs = ConfigDefaults::CAPTIVE_GRACE_MS;
     Config::CaptiveDurationMs = ConfigDefaults::CAPTIVE_DURATION_MS;
+    Config::DmxBlackoutTimeoutMs = ConfigDefaults::DMX_BLACKOUT_TIMEOUT_MS;
     Config::CaptiveSsid = ConfigDefaults::CAPTIVE_SSID;
     Config::CaptivePass = ConfigDefaults::CAPTIVE_PASS;
 #endif

@@ -129,6 +129,13 @@ void WebInterface::handleSave() {
     } else if (server.hasArg("cap_duration_ms")) {
         Config::CaptiveDurationMs = parseNonNegativeMillis(server.arg("cap_duration_ms"));
     }
+    if (server.hasArg("dmx_blackout_s")) {
+        const uint32_t parsed = parseSecondsToMillis(server.arg("dmx_blackout_s"));
+        Config::DmxBlackoutTimeoutMs = parsed == 0 ? ConfigDefaults::DMX_BLACKOUT_TIMEOUT_MS : parsed;
+    } else if (server.hasArg("dmx_blackout_ms")) {
+        const uint32_t parsed = parseNonNegativeMillis(server.arg("dmx_blackout_ms"));
+        Config::DmxBlackoutTimeoutMs = parsed == 0 ? ConfigDefaults::DMX_BLACKOUT_TIMEOUT_MS : parsed;
+    }
     if (server.hasArg("cap_ssid")) Config::CaptiveSsid = server.arg("cap_ssid");
     if (server.hasArg("cap_pass")) Config::CaptivePass = server.arg("cap_pass");
 
@@ -174,14 +181,14 @@ void WebInterface::handleStatus() {
         receiving = (lastArtnetPacketTime > 0) && (millis() - lastArtnetPacketTime < 2000);
         server.send(200, "text/plain", receiving ? "artnet_active" : "artnet_inactive");
     } else {
-        receiving = DmxInput::isReceiving(2000);
+        receiving = DmxInput::isReceiving(Config::DmxBlackoutTimeoutMs);
         server.send(200, "text/plain", receiving ? "dmx_active" : "dmx_inactive");
     }
 }
 
 void WebInterface::handleDmxStatus() {
     const bool isDmxMode = (Config::InputMode == ConfigDefaults::InputMode::DMX);
-    const bool receiving = DmxInput::isReceiving(2000);
+    const bool receiving = DmxInput::isReceiving(Config::DmxBlackoutTimeoutMs);
     const unsigned long ageMs = DmxInput::lastPacketAgeMs();
 
     uint8_t snapshot[512];
@@ -407,6 +414,8 @@ String WebInterface::getHtml() {
             String(millisToSeconds(Config::CaptiveGraceMs)) + "'></td></tr>";
     html += "<tr><td>Duration (seconds)<div class='note'>How long the setup hotspot stays active before stopping. Set 0 to keep it active until Ethernet connects.</div></td><td><input type='number' min='0' name='cap_duration_s' value='" +
             String(millisToSeconds(Config::CaptiveDurationMs)) + "'></td></tr>";
+    html += "<tr><td>DMX Blackout Timeout (seconds)<div class='note'>If DMX input is missing for this duration, fallback blackout is triggered. Minimum is 1 second.</div></td><td><input type='number' min='1' name='dmx_blackout_s' value='" +
+            String(millisToSeconds(Config::DmxBlackoutTimeoutMs)) + "'></td></tr>";
     html += "<tr><td>SSID Base</td><td><input type='text' name='cap_ssid' value='" +
             Config::CaptiveSsid + "'></td></tr>";
     html += "<tr><td>Password</td><td><input type='text' name='cap_pass' value='" +
